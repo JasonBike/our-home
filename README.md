@@ -2,6 +2,30 @@
 
 两个人的买房、装修、结婚预算。纯静态 HTML / CSS / JavaScript，没有后端、数据库、构建步骤、CDN 或部署脚本。
 
+## 本地启动
+
+项目不需要安装依赖。macOS / Linux 直接运行：
+
+```sh
+cd /Users/skadi/go/our-home
+python3 -m http.server 8788 --bind 127.0.0.1
+```
+
+然后打开 <http://127.0.0.1:8788/>。终端按 `Ctrl-C` 停止服务；如果 8788 端口已经被占用，可以换成其他端口，例如：
+
+```sh
+python3 -m http.server 8888 --bind 127.0.0.1
+```
+
+也可以用任意静态文件服务器启动。不要直接双击 `index.html`，因为页面使用 ES module，`file://` 下可能被浏览器的跨域策略拦截。
+
+启动后可以用下面的命令确认入口和资源正常：
+
+```sh
+curl -I http://127.0.0.1:8788/
+curl -I http://127.0.0.1:8788/assets/app.js
+```
+
 ## 文件
 
 - `index.html`：入口，Nginx 直接托管。
@@ -11,6 +35,44 @@
 - `tests/model.test.mjs`：计算模型测试。
 
 发布只需要 `index.html` 和完整的 `assets/` 目录，保持相对位置。资源使用相对路径，导航使用 hash，可放在站点根目录或子目录。通过 HTTP(S) 访问；ES modules 不适合直接双击 `file://` 预览。
+
+## 用 Nginx 发布
+
+把 `index.html` 和 `assets/` 上传到服务器，例如 `/var/www/our-home/`：
+
+```sh
+scp index.html user@server:/var/www/our-home/
+scp -r assets user@server:/var/www/our-home/
+```
+
+Nginx 配置示例：
+
+```nginx
+server {
+    listen 80;
+    server_name your-domain.com;
+
+    root /var/www/our-home;
+    index index.html;
+
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+
+    location ~* \.(html|css|js|svg)$ {
+        add_header Cache-Control "no-cache";
+    }
+}
+```
+
+检查配置并重载 Nginx：
+
+```sh
+sudo nginx -t
+sudo systemctl reload nginx
+```
+
+如果服务器使用 macOS 或其他进程管理方式，只需要把最后一条替换成对应的 Nginx reload 命令。这个项目没有需要反向代理的 API，也不需要启动 Go 服务。
 
 ## 页面内容
 
