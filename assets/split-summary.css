@@ -1,0 +1,4 @@
+.split-total{display:flex;align-items:baseline;gap:9px;padding:9px 13px;background:#eef2e7;border-radius:8px;color:#819270;font-size:11px;white-space:nowrap}
+.split-total strong{font-size:23px;line-height:1;font-weight:500;color:var(--green);letter-spacing:-.5px}
+.split-total strong small{font-size:10px;letter-spacing:0;margin-left:3px}
+@media(max-width:450px){.split-total{padding:8px 10px;gap:6px;font-size:10px}.split-total strong{font-size:20px}}
