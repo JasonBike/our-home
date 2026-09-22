@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>我们的家</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --paper:#f5efe4;
+  --card:#fdfaf4;
+  --ink:#332c25;
+  --ink2:#786c5e;
+  --faint:#a3968a;
+  --rule:#ded2c0;
+  --clay:#b04a32;
+  --clay-l:#f2ded5;
+  --sage:#5f7a54;
+  --sage-l:#e3ead9;
+  --ochre:#a37c1e;
+  --ochre-l:#f4e8c6;
+  --slate:#4f6a80;
+  --slate-l:#dce6ec;
+  --sans:"PingFang SC","Hiragino Sans GB",-apple-system,"Microsoft YaHei",sans-serif;
+}
+body{
+  font-family:var(--sans);font-weight:400;
+  background:var(--paper);color:var(--ink);line-height:1.8;
+  -webkit-font-smoothing:antialiased;
+  padding:0 0 calc(76px + env(safe-area-inset-bottom));
+}
+.wrap{max-width:600px;margin:0 auto;padding:0 22px}
+/* 标题:苹方中黑,靠字重和字距区分,不用手写体 */
+.hand{font-weight:600;letter-spacing:.06em}
+/* 所有数字统一走这个类 */
+.n{
+  font-weight:600;
+  font-variant-numeric:tabular-nums;
+  letter-spacing:-.01em;font-feature-settings:"tnum";
+}
+/* ===== 封面 ===== */
+.cover{
+  background:linear-gradient(170deg,#3d3429 0%,#4a3d2e 55%,#453a2c 100%);
+  color:#f5efe4;padding:64px 22px 58px;text-align:center;margin-bottom:38px;
+}
+.cover .kicker{
+  font-size:11px;letter-spacing:.34em;color:#c4b49a;margin-bottom:22px;
+}
+.cover h1{font-size:44px;font-weight:400;line-height:1.3;letter-spacing:.05em}
+.cover .dash{width:38px;height:1px;background:#8d7c62;margin:22px auto}
+.cover .meta{font-size:13px;color:#bfb0a0;line-height:2}
+
+/* 封面大数字 */
+.cover .total{margin-top:34px}
+.cover .total .lb{font-size:12px;letter-spacing:.2em;color:#a89880;margin-bottom:10px}
+.cover .total .v{font-size:64px;line-height:1;color:#fff}
+.cover .total .v em{font-size:26px;font-style:normal;color:#c4b49a;font-weight:400;margin:0 4px}
+.cover .total .v i{font-size:24px;font-style:normal;color:#c4b49a;font-weight:400}
+
+/* ===== 四宫格 ===== */
+.quad{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--rule);
+      border:1px solid var(--rule);margin-bottom:44px}
+.q{background:var(--card);padding:22px 18px}
+.q .t{font-size:12.5px;color:var(--ink2);letter-spacing:.04em;margin-bottom:10px}
+.q .v{font-size:34px;line-height:1.05}
+.q .v i{font-size:15px;font-style:normal;color:var(--ink2);font-weight:400;margin-left:3px}
+.q:nth-child(1) .v{color:var(--clay)}
+.q:nth-child(2) .v{color:var(--sage)}
+.q:nth-child(3) .v{color:var(--slate)}
+.q:nth-child(4) .v{color:var(--ochre)}
+.q .c{font-size:11.5px;color:var(--faint);margin-top:7px;line-height:1.6}
+
+/* ===== 章节头 ===== */
+.sec{margin:0 0 20px;display:flex;align-items:baseline;gap:12px}
+.sec .no{font-size:12px;color:var(--faint);letter-spacing:.1em;flex:none}
+.sec h2{font-size:25px;font-weight:400;letter-spacing:.03em;flex:none}
+.sec .line{flex:1;height:1px;background:var(--rule);margin-bottom:7px}
+.sec .amt{font-size:19px;color:var(--clay);flex:none}
+
+/* ===== 明细:大字号,无小字 ===== */
+.list{border-top:1px solid var(--rule);margin-bottom:14px}
+.li{
+  display:flex;align-items:center;gap:14px;
+  padding:16px 2px;border-bottom:1px solid var(--rule);
+}
+.li .lb{flex:1;font-size:16px;line-height:1.5}
+.li .lb small{
+  display:block;font-size:12px;color:var(--faint);
+  margin-top:1px;line-height:1.55;font-weight:400;
+}
+.li .v{font-size:21px;flex:none;white-space:nowrap}
+.li .v i{font-size:13px;font-style:normal;color:var(--ink2);font-weight:400}
+.li.sum{border-bottom:none;border-top:2px solid var(--ink);margin-top:-1px;
+        padding-top:17px}
+.li.sum .lb{font-size:15px;color:var(--ink2);letter-spacing:.05em}
+.li.sum .v{font-size:29px;color:var(--clay)}
+
+/* 占比条 */
+.pbar{display:flex;height:7px;margin:0 0 20px;overflow:hidden}
+.pbar i{display:block}
+.pkey{display:flex;flex-wrap:wrap;gap:6px 18px;margin-bottom:22px;font-size:12px;color:var(--ink2)}
+.pkey span{display:flex;align-items:center;gap:6px}
+.pkey b{width:9px;height:9px;flex:none;border-radius:1px}
+
+/* ===== 时间轴 ===== */
+.road{margin-bottom:6px}
+.stop{display:flex;gap:16px;padding:15px 0;border-bottom:1px solid var(--rule)}
+.stop:last-child{border-bottom:none}
+.stop .idx{
+  flex:none;width:26px;height:26px;border:1px solid var(--rule);border-radius:50%;
+  display:grid;place-items:center;font-size:12px;color:var(--ink2);
+  font-family:var(--sans);font-weight:600;background:var(--card);
+}
+.stop.hi .idx{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.stop .bd{flex:1;min-width:0}
+.stop .w{font-size:11.5px;color:var(--faint);letter-spacing:.06em}
+.stop .h{font-size:16.5px;margin:1px 0 0;display:flex;align-items:baseline;
+         gap:10px;flex-wrap:wrap}
+.stop .h b{font-weight:400}
+.stop .h .amt{font-size:20px;color:var(--clay)}
+
+/* ===== 提示块 ===== */
+.note{
+  background:var(--card);border-left:2px solid var(--ochre);
+  padding:16px 18px;font-size:13.5px;line-height:1.85;color:var(--ink2);
+  margin:22px 0 0;
+}
+.note b{color:var(--ink);font-weight:600}
+.note.s{border-left-color:var(--sage)}
+.note.c{border-left-color:var(--clay)}
+
+/* ===== 两方案 ===== */
+.two{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:6px}
+.opt{background:var(--card);border:1px solid var(--rule);padding:24px 18px;
+     text-align:center;position:relative}
+.opt.on{border-color:var(--sage);border-width:1.5px}
+.opt .tag{position:absolute;top:-1px;left:-1px;background:var(--sage);color:#fff;
+          font-size:10.5px;padding:2px 9px;letter-spacing:.08em}
+.opt .lb{font-size:13px;color:var(--ink2);margin-bottom:9px;letter-spacing:.06em}
+.opt .v{font-size:38px;line-height:1;color:var(--ink)}
+.opt.on .v{color:var(--sage)}
+.opt .v i{font-size:16px;font-style:normal;color:var(--ink2);font-weight:400}
+.opt .c{font-size:12px;color:var(--faint);margin-top:11px;line-height:1.7}
+
+/* ===== 正文段落 ===== */
+.ctxt{font-size:14.5px;line-height:1.95;color:var(--ink2);margin-bottom:18px}
+.ctxt b{color:var(--ink);font-weight:600}
+
+/* ===== 数据小表 ===== */
+.tbl{border-top:1px solid var(--rule);margin-bottom:20px}
+.tbl .th,.tbl .tr{display:grid;grid-template-columns:1fr auto auto;gap:10px;
+                  padding:11px 2px;border-bottom:1px solid var(--rule);
+                  align-items:baseline}
+.tbl .th{font-size:12px;color:var(--faint);letter-spacing:.05em}
+.tbl .tr{font-size:14.5px}
+.tbl .th span:not(:first-child),.tbl .tr span:not(:first-child){text-align:right}
+.tbl .tr.hl{background:var(--card)}
+.tbl .tr .n{color:var(--clay);font-size:15.5px}
+.tbl .bad{color:var(--faint);font-size:13px}
+.tbl .mid{color:var(--sage);font-size:13px}
+.tbl.two-col .th,.tbl.two-col .tr{grid-template-columns:auto 1fr}
+.tbl.two-col .tr span:last-child{color:var(--ink2);font-size:13.5px}
+
+/* ===== 贷款计算器 ===== */
+.ctitle{font-size:14px;color:var(--ink2);letter-spacing:.08em;
+        padding-bottom:14px;border-bottom:1px solid var(--rule);margin-bottom:6px}
+.res3{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;
+      background:var(--rule);border:1px solid var(--rule);margin-top:22px}
+.r3{background:var(--paper);padding:17px 8px;text-align:center}
+.r3 .rlb{font-size:11.5px;color:var(--ink2);letter-spacing:.06em;margin-bottom:7px}
+.r3v{font-size:27px;line-height:1.05;color:var(--clay);display:inline}
+.r3u{font-size:12px;color:var(--ink2);display:inline;margin-left:2px}
+.prep{margin-top:24px;padding-top:20px;border-top:1px dashed var(--rule)}
+.ptitle{font-size:13.5px;color:var(--ink2);margin-bottom:14px;letter-spacing:.05em}
+.sldtop b{font-weight:600;color:var(--ink)}
+.seg{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--rule);
+     border:1px solid var(--rule);margin-top:20px}
+.sg{background:var(--card);border:none;padding:11px 6px;font-size:12.5px;
+    color:var(--ink2);cursor:pointer;font-family:inherit;letter-spacing:.03em;
+    transition:background .15s,color .15s}
+.sg.on{background:var(--ink);color:var(--paper)}
+.pres{display:flex;justify-content:space-between;margin-top:16px;
+      padding-top:14px;border-top:1px solid var(--rule);
+      font-size:13px;color:var(--ink2)}
+.pres b{color:var(--sage);font-size:15px}
+
+/* ===== 对比表 ===== */
+.cmp{margin-top:16px;border-top:1px solid var(--rule)}
+.ci{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;
+    padding:12px 2px;border-bottom:1px solid var(--rule);align-items:baseline}
+.ci .cl{font-size:13px;color:var(--ink2)}
+.ci .cv{font-size:14.5px;text-align:center}
+.ci:last-child{border-bottom:none}
+@media(max-width:420px){
+  .ci{grid-template-columns:1fr;gap:3px;text-align:left}
+  .ci .cv{text-align:left;padding-left:12px;font-size:14px}
+  .ci .cv:nth-of-type(1)::before{content:"公积金 · ";color:var(--faint);font-size:12px}
+  .ci .cv:nth-of-type(2)::before{content:"组合贷 · ";color:var(--faint);font-size:12px}
+}
+
+/* ===== 注意事项 ===== */
+.warn{border-top:1px solid var(--rule)}
+.wi{padding:15px 0;border-bottom:1px solid var(--rule);display:flex;gap:13px}
+.wi .k{flex:none;font-size:11px;color:var(--faint);width:22px;padding-top:5px;
+       font-family:var(--sans);font-weight:600}
+.wi .b{flex:1}
+.wi .h{font-size:15.5px;margin-bottom:2px}
+.wi .h em{font-style:normal;color:var(--clay);font-family:var(--sans);font-weight:600}
+.wi .d{font-size:12.5px;color:var(--faint);line-height:1.7}
+
+/* ===== 结尾 ===== */
+.end{text-align:center;margin-top:52px;padding-top:34px;border-top:1px solid var(--rule)}
+.end .l{font-size:24px;line-height:1.8;color:var(--ink2);letter-spacing:.04em}
+
+section{margin-bottom:46px}
+
+/* ===== 计算器 ===== */
+.calc{background:var(--card);border:1px solid var(--rule);padding:22px 20px}
+.crow{display:flex;align-items:center;gap:12px;padding:12px 0;
+      border-bottom:1px solid var(--rule)}
+.clb{flex:1;font-size:15px;line-height:1.45}
+.clb .fx{display:inline-block;font-size:10.5px;background:var(--slate-l);
+         color:var(--slate);padding:1px 7px;margin-left:7px;vertical-align:1.5px;
+         letter-spacing:.04em}
+.clb .hint{display:block;font-size:11.5px;color:var(--faint);margin-top:1px}
+.cin{flex:none;display:flex;align-items:baseline;gap:4px}
+.cin input{
+  width:82px;text-align:right;font-family:var(--sans);font-weight:600;
+  font-size:22px;color:var(--ink);background:transparent;
+  border:none;border-bottom:1.5px solid var(--rule);padding:2px 4px;
+  font-variant-numeric:tabular-nums;
+}
+.cin input:focus{outline:none;border-bottom-color:var(--clay)}
+.cin input::-webkit-outer-spin-button,.cin input::-webkit-inner-spin-button{
+  -webkit-appearance:none;margin:0}
+.cin input[type=number]{-moz-appearance:textfield}
+.cin i{font-size:13px;font-style:normal;color:var(--ink2)}
+
+.sldwrap{padding:22px 0 6px}
+.sldtop{display:flex;justify-content:space-between;align-items:baseline;
+        font-size:14px;color:var(--ink2);margin-bottom:12px}
+.sldval{font-size:22px;color:var(--clay)}
+.sldwrap input[type=range]{
+  -webkit-appearance:none;appearance:none;width:100%;height:3px;
+  background:var(--rule);outline:none;margin:0;
+}
+.sldwrap input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none;width:24px;height:24px;border-radius:50%;
+  background:var(--clay);cursor:pointer;border:3px solid var(--card);
+  box-shadow:0 1px 5px rgba(51,44,37,.28);
+}
+.sldwrap input[type=range]::-moz-range-thumb{
+  width:22px;height:22px;border-radius:50%;background:var(--clay);
+  cursor:pointer;border:3px solid var(--card);
+}
+.sldfoot{display:flex;justify-content:space-between;font-size:11px;
+         color:var(--faint);margin-top:10px}
+
+.res{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--rule);
+     margin-top:22px;border:1px solid var(--rule)}
+.rcol{background:var(--paper);padding:20px 16px;text-align:center}
+.rlb{font-size:12.5px;color:var(--ink2);letter-spacing:.1em;margin-bottom:8px}
+.rv{font-size:36px;line-height:1.05}
+.rv i{font-size:15px;font-style:normal;color:var(--ink2);font-weight:400;margin-left:2px}
+.rcol.m .rv{color:var(--slate)}
+.rcol.f .rv{color:var(--clay)}
+.rd{font-size:11.5px;color:var(--faint);margin-top:9px;line-height:1.65;min-height:32px}
+.rtot{display:flex;justify-content:space-between;align-items:baseline;
+      padding:15px 2px 2px;font-size:14px;color:var(--ink2)}
+.rtot .n{font-size:22px;color:var(--ink)}
+
+/* ===== 桌面 ===== */
+@media(min-width:860px){
+  .cover{padding:80px 22px 70px}
+  .cover h1{font-size:56px}
+  .cover .total .v{font-size:80px}
+  .wrap{max-width:1040px;display:grid;grid-template-columns:1fr 1fr;
+        gap:0 44px;align-items:start}
+  .wrap>.full{grid-column:1/-1}
+  .quad{grid-template-columns:repeat(4,1fr)}
+}
+/* ===== 小屏 ===== */
+@media(max-width:380px){
+  .wrap{padding:0 16px}
+  .cover{padding:48px 18px 44px}
+  .cover h1{font-size:35px}
+  .cover .total .v{font-size:52px}
+  .q{padding:18px 14px}
+  .q .v{font-size:29px}
+  .li .lb{font-size:15px}
+  .li .v{font-size:19px}
+  .two{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div class="cover">
+  <div class="kicker">OUR HOME · 2026</div>
+  <h1 class="hand">我们的家</h1>
+  <div class="dash"></div>
+  <div class="meta">上海 · 二手房 400万 · 公积金贷款<br>结婚不办婚礼</div>
+  <div class="total">
+    <div class="lb">一共要准备</div>
+    <div class="v n">243<em>~</em>261<i>万</i></div>
+  </div>
+</div>
+
+<div class="wrap">
+
+<div class="quad full">
+  <div class="q">
+    <div class="t">先要备好</div>
+    <div class="v n">172<i>万</i></div>
+    <div class="c">拿钥匙前付完</div>
+  </div>
+  <div class="q">
+    <div class="t">公积金贷</div>
+    <div class="v n">240<i>万</i></div>
+    <div class="c">利率 2.6%</div>
+  </div>
+  <div class="q">
+    <div class="t">每月还</div>
+    <div class="v n">9,610<i>元</i></div>
+    <div class="c">30 年</div>
+  </div>
+  <div class="q">
+    <div class="t">30年利息</div>
+    <div class="v n">106<i>万</i></div>
+    <div class="c">比商贷省 54万</div>
+  </div>
+</div>
+<section class="full">
+  <div class="sec">
+    <span class="no">01</span>
+    <h2 class="hand">买房</h2>
+    <span class="line"></span>
+    <span class="amt n">184.3万</span>
+  </div>
+  <div class="pbar">
+    <i style="background:var(--clay);width:86.8%"></i>
+    <i style="background:var(--slate);width:6.7%"></i>
+    <i style="background:var(--ochre);width:6.5%"></i>
+  </div>
+  <div class="pkey">
+    <span><b style="background:var(--clay)"></b>首付</span>
+    <span><b style="background:var(--slate)"></b>税费</span>
+    <span><b style="background:var(--ochre)"></b>备用</span>
+  </div>
+  <div class="list">
+    <div class="li"><span class="lb">首付<small>房价的 40%,公积金最多贷 240万</small></span>
+      <span class="v n" style="color:var(--clay)">160<i>万</i></span></div>
+    <div class="li"><span class="lb">过户税费<small>契税 · 个税 · 中介费 · 评估登记</small></span>
+      <span class="v n" style="color:var(--slate)">12.3<i>万</i></span></div>
+    <div class="li"><span class="lb">备用金<small>评估价不足要补首付</small></span>
+      <span class="v n" style="color:var(--ochre)">12<i>万</i></span></div>
+    <div class="li sum"><span class="lb">合计</span><span class="v n">184.3<i>万</i></span></div>
+  </div>
+</section>
+
+<section class="full">
+  <div class="sec">
+    <span class="no">02</span>
+    <h2 class="hand">装修家具</h2>
+    <span class="line"></span>
+    <span class="amt n">42万</span>
+  </div>
+  <div class="pbar">
+    <i style="background:var(--sage);width:71.4%"></i>
+    <i style="background:var(--ochre);width:23.8%"></i>
+    <i style="background:var(--slate);width:4.8%"></i>
+  </div>
+  <div class="pkey">
+    <span><b style="background:var(--sage)"></b>硬装</span>
+    <span><b style="background:var(--ochre)"></b>家具家电</span>
+    <span><b style="background:var(--slate)"></b>租房搬家</span>
+  </div>
+  <div class="list">
+    <div class="li"><span class="lb">硬装<small>拆旧 · 水电 · 防水瓦工 · 木工 · 油漆 · 门窗</small></span>
+      <span class="v n" style="color:var(--sage)">30<i>万</i></span></div>
+    <div class="li"><span class="lb">家具<small>沙发茶几 · 床和床垫 · 餐桌椅 · 柜子</small></span>
+      <span class="v n" style="color:var(--ochre)">5.5<i>万</i></span></div>
+    <div class="li"><span class="lb">家电<small>冰箱洗衣机空调 · 厨电 · 热水器</small></span>
+      <span class="v n" style="color:var(--ochre)">4.5<i>万</i></span></div>
+    <div class="li"><span class="lb">租房搬家<small>装修那四个月</small></span>
+      <span class="v n" style="color:var(--slate)">2<i>万</i></span></div>
+    <div class="li sum"><span class="lb">合计</span><span class="v n">42<i>万</i></span></div>
+  </div>
+  <div class="note s">
+    这部分弹性最大。房子交房状态好的话,硬装可以压到 <b>10~15万</b>;
+    家具家电如果有现成的或分批添置,<b>6~8万</b> 也够用。全屋翻新是按最费的情况估的。
+  </div>
+</section>
+
+<section class="full">
+  <div class="sec">
+    <span class="no">03</span>
+    <h2 class="hand">节奏</h2>
+    <span class="line"></span>
+  </div>
+  <div class="road">
+    <div class="stop"><span class="idx">1</span><div class="bd">
+      <div class="w">签约当天</div>
+      <div class="h"><b>定金</b><span class="amt n">5~10万</span></div>
+    </div></div>
+    <div class="stop hi"><span class="idx">2</span><div class="bd">
+      <div class="w">签约后一个月内</div>
+      <div class="h"><b>首付款</b><span class="amt n">160万</span></div>
+    </div></div>
+    <div class="stop hi"><span class="idx">3</span><div class="bd">
+      <div class="w">过户当天 · 拿到房产证</div>
+      <div class="h"><b>税费</b><span class="amt n">12.3万</span></div>
+    </div></div>
+    <div class="stop"><span class="idx">4</span><div class="bd">
+      <div class="w">拿钥匙后三四个月</div>
+      <div class="h"><b>装修家电</b><span class="amt n">40万</span></div>
+    </div></div>
+    <div class="stop"><span class="idx">♡</span><div class="bd">
+      <div class="w">大概半年后</div>
+      <div class="h"><b>搬进去住</b></div>
+    </div></div>
+  </div>
+  <div class="note s">
+    <b>真正要提前攒够的是 172万</b> —— 首付加税费,集中在前两个月。
+    后面 40万 有三四个月慢慢付。
+  </div>
+</section>
+<section class="full">
+  <div class="sec">
+    <span class="no">04</span>
+    <h2 class="hand">结婚</h2>
+    <span class="line"></span>
+    <span class="amt n">17~35万</span>
+  </div>
+  <div class="list">
+    <div class="li"><span class="lb">彩礼<small>要两家商量,弹性最大</small></span>
+      <span class="v n" style="color:var(--clay)">10~18<i>万</i></span></div>
+    <div class="li"><span class="lb">三金<small>项链 · 戒指 · 手镯</small></span>
+      <span class="v n" style="color:var(--ochre)">3~5<i>万</i></span></div>
+    <div class="li"><span class="lb">婚戒</span>
+      <span class="v n" style="color:var(--ochre)">1~2.5<i>万</i></span></div>
+    <div class="li"><span class="lb">家长见面宴<small>两三桌</small></span>
+      <span class="v n" style="color:var(--sage)">1~2<i>万</i></span></div>
+    <div class="li"><span class="lb">改口费 · 见面礼</span>
+      <span class="v n" style="color:var(--sage)">0.5~1<i>万</i></span></div>
+    <div class="li"><span class="lb">喜糖 · 伴手礼</span>
+      <span class="v n" style="color:var(--sage)">0.5~1<i>万</i></span></div>
+    <div class="li"><span class="lb">婚纱照<small>可以先不拍</small></span>
+      <span class="v n" style="color:var(--slate)">0.8~1.5<i>万</i></span></div>
+    <div class="li"><span class="lb">蜜月旅行<small>可以往后排</small></span>
+      <span class="v n" style="color:var(--slate)">0~4<i>万</i></span></div>
+    <div class="li sum"><span class="lb">合计</span><span class="v n">17~35<i>万</i></span></div>
+  </div>
+  <div class="note c">
+    彩礼先按 10~18万 估的,<b>具体多少得看两家习惯</b>,等和两边爸妈聊过再定。
+  </div>
+</section>
+<section class="full">
+  <div class="sec">
+    <span class="no">05</span>
+    <h2 class="hand">怎么分</h2>
+    <span class="line"></span>
+  </div>
+  <div class="calc">
+    <div class="crow">
+      <div class="clb">彩礼<span class="fx">男方</span></div>
+      <div class="cin"><input type="number" id="i-cai" value="14" step="1"><i>万</i></div>
+    </div>
+    <div class="crow">
+      <div class="clb">三金 + 婚戒<span class="fx">男方</span></div>
+      <div class="cin"><input type="number" id="i-jin" value="6" step="0.5"><i>万</i></div>
+    </div>
+    <div class="crow">
+      <div class="clb">其他婚礼开销<span class="hint">宴请 · 喜糖 · 婚纱照</span></div>
+      <div class="cin"><input type="number" id="i-oth" value="4" step="0.5"><i>万</i></div>
+    </div>
+    <div class="crow">
+      <div class="clb">买房<span class="hint">首付 · 税费 · 备用</span></div>
+      <div class="cin"><input type="number" id="i-house" value="184.3" step="1"><i>万</i></div>
+    </div>
+    <div class="crow">
+      <div class="clb">装修家具<span class="hint">硬装 · 家具家电 · 租房</span></div>
+      <div class="cin"><input type="number" id="i-reno" value="42" step="1"><i>万</i></div>
+    </div>
+
+    <div class="sldwrap">
+      <div class="sldtop">
+        <span>买房部分,男方出</span>
+        <span class="sldval n" id="pct">50%</span>
+      </div>
+      <input type="range" id="i-pct" min="0" max="100" value="50" step="5">
+      <div class="sldfoot"><span>全部女方</span><span>对半</span><span>全部男方</span></div>
+    </div>
+    <div class="sldwrap" style="padding-top:26px">
+      <div class="sldtop">
+        <span>装修家具,男方出</span>
+        <span class="sldval n" id="pct2">50%</span>
+      </div>
+      <input type="range" id="i-pct2" min="0" max="100" value="50" step="5">
+      <div class="sldfoot"><span>全部女方</span><span>对半</span><span>全部男方</span></div>
+    </div>
+
+    <div class="res">
+      <div class="rcol m">
+        <div class="rlb">男方</div>
+        <div class="rv n" id="r-m">135.2<i>万</i></div>
+        <div class="rd" id="d-m"></div>
+      </div>
+      <div class="rcol f">
+        <div class="rlb">女方</div>
+        <div class="rv n" id="r-f">115.2<i>万</i></div>
+        <div class="rd" id="d-f"></div>
+      </div>
+    </div>
+    <div class="rtot">
+      <span>总计</span><span class="n" id="r-t">250.3万</span>
+    </div>
+  </div>
+</section>
+<section class="full">
+  <div class="sec">
+    <span class="no">06</span>
+    <h2 class="hand">贷款怎么选</h2>
+    <span class="line"></span>
+  </div>
+  <div class="two">
+    <div class="opt on">
+      <span class="tag">现在算的</span>
+      <div class="lb">纯公积金</div>
+      <div class="v n">243<i>万</i></div>
+      <div class="c">首付 160万<br>月供 9,610元</div>
+    </div>
+    <div class="opt">
+      <div class="lb">组合贷</div>
+      <div class="v n">143<i>万</i></div>
+      <div class="c">首付 60万<br>月供 14,000元</div>
+    </div>
+  </div>
+  <div class="cmp">
+    <div class="ci"><span class="cl">贷款</span>
+      <span class="cv">公积金 240万</span><span class="cv">公积金 240万 + 商贷 100万</span></div>
+    <div class="ci"><span class="cl">首付</span>
+      <span class="cv n">160万</span><span class="cv n">60万</span></div>
+    <div class="ci"><span class="cl">现金总需求</span>
+      <span class="cv n" style="color:var(--sage)">243万</span>
+      <span class="cv n" style="color:var(--clay)">143万</span></div>
+    <div class="ci"><span class="cl">每月还</span>
+      <span class="cv n">9,610元</span><span class="cv n">14,000元</span></div>
+    <div class="ci"><span class="cl">30年利息</span>
+      <span class="cv n">106万</span><span class="cv n">160万</span></div>
+  </div>
+  <div class="note s">
+    <b>差 100万 现金,换每月少 4,400元、总共少付 54万 利息。</b>
+    手上有 240万 就选纯公积金;只有 150万 左右只能走组合贷。
+    组合贷放款更慢,卖家接受度也更低。
+  </div>
+
+  <div class="calc" style="margin-top:26px">
+    <div class="ctitle">自己算一下</div>
+    <div class="sldwrap" style="padding-top:4px">
+      <div class="sldtop">
+        <span>公积金贷款</span>
+        <span class="sldval n" id="lv">240万</span>
+      </div>
+      <input type="range" id="l-amt" min="30" max="300" value="240" step="5">
+      <div class="sldfoot"><span>30万</span><span>300万</span></div>
+    </div>
+    <div class="sldwrap" style="padding-top:22px">
+      <div class="sldtop">
+        <span>还款年限</span>
+        <span class="sldval n" id="ly">30年</span>
+      </div>
+      <input type="range" id="l-yr" min="5" max="30" value="30" step="1">
+      <div class="sldfoot"><span>5年</span><span>30年</span></div>
+    </div>
+    <div class="crow" style="border-bottom:none;padding-top:18px">
+      <div class="clb">年利率<span class="hint">首套 5年以上,待确认</span></div>
+      <div class="cin"><input type="number" id="l-rate" value="2.6" step="0.05"><i>%</i></div>
+    </div>
+
+    <div class="res3">
+      <div class="r3"><div class="rlb">每月还</div>
+        <div class="r3v n" id="o-pay">9,610</div><div class="r3u">元</div></div>
+      <div class="r3"><div class="rlb">总利息</div>
+        <div class="r3v n" id="o-int">106</div><div class="r3u">万</div></div>
+      <div class="r3"><div class="rlb">本息合计</div>
+        <div class="r3v n" id="o-all">346</div><div class="r3u">万</div></div>
+    </div>
+
+    <div class="prep">
+      <div class="ptitle">如果中途提前还一笔</div>
+      <div class="sldwrap" style="padding:2px 0 4px">
+        <div class="sldtop">
+          <span>第 <b class="n" id="py">3</b> 年,还 <b class="n" id="pa">50万</b></span>
+          <span class="sldval n" id="psave">省 40.9万</span>
+        </div>
+        <input type="range" id="p-amt" min="0" max="150" value="50" step="5">
+        <div class="sldfoot"><span>不提前还</span><span>还 150万</span></div>
+      </div>
+      <input type="range" id="p-yr" min="1" max="20" value="3" step="1" style="margin-top:14px">
+      <div class="sldfoot"><span>第1年还</span><span>第20年还</span></div>
+
+      <div class="seg">
+        <button class="sg on" data-m="cut">缩年限 · 省更多</button>
+        <button class="sg" data-m="red">减月供 · 压力小</button>
+      </div>
+      <div class="pres">
+        <span>月供 <b class="n" id="p-pay">9,608元</b></span>
+        <span>还完还要 <b class="n" id="p-left">19.1年</b></span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="full">
+  <div class="sec">
+    <span class="no">07</span>
+    <h2 class="hand">提前还贷</h2>
+    <span class="line"></span>
+    <span class="amt n">最多省 45万</span>
+  </div>
+
+  <div class="ctxt">
+    省下的钱<b>全部是利息</b>,本金 240万 一分不少还。
+    不提前还,30年总共掏 345.9万(本金 240 + 利息 105.9);
+    第3年还 50万,总共掏 305万 —— 少掏的 40.9万 就是省下的利息。
+  </div>
+
+  <div class="tbl">
+    <div class="th"><span>什么时候还 50万</span><span>缩年限省</span><span>减月供省</span></div>
+    <div class="tr hl"><span>第 1 年</span><span class="n">45.3万</span><span class="n">21.2万</span></div>
+    <div class="tr"><span>第 3 年</span><span class="n">40.9万</span><span class="n">19.6万</span></div>
+    <div class="tr"><span>第 5 年</span><span class="n">36.8万</span><span class="n">18.1万</span></div>
+    <div class="tr"><span>第 10 年</span><span class="n">27.1万</span><span class="n">14.2万</span></div>
+    <div class="tr"><span>第 15 年</span><span class="n">18.4万</span><span class="n">10.4万</span></div>
+  </div>
+
+  <div class="note s">
+    <b>两个结论:越早还越省,缩年限比减月供省一倍。</b>
+    缩年限是月供不变、砍掉最后几年;减月供是年限不变、每月少还。
+    第1年比第3年只多省 4.4万,所以不必为了抢时间掏空手里的钱。
+  </div>
+
+  <div class="ctxt" style="margin-top:26px">
+    <b>但第一年你大概没钱还。</b>
+    前两个月首付税费 172万,接着装修家具 42万,同期还有结婚 17~35万 ——
+    第一年正好是花钱最猛的时候。要在第1年还 50万,手上得有 293万。
+  </div>
+
+  <div class="tbl two-col">
+    <div class="th"><span>手上现金</span><span>怎么办</span></div>
+    <div class="tr"><span class="n">290万+</span><span>第1年就还,省 45.3万</span></div>
+    <div class="tr hl"><span class="n">243万 左右</span><span>先扛过装修结婚,攒够再还</span></div>
+    <div class="tr"><span class="n">不到 243万</span><span>考虑组合贷或降预算</span></div>
+  </div>
+
+  <div class="note">
+    <b>不用等攒满 50万 才动手。</b>公积金贷款一般允许多次提前还款,
+    有 10万 就还 10万,分批推进的省息效果和一次还差不多。
+    而且冲还贷从放款就开着,每月公积金入账都在自动削本金。
+  </div>
+
+  <div class="ctxt" style="margin-top:26px">
+    <b>该不该还,取决于这笔钱有没有更好的去处。</b>
+    省下的 40.9万 摊在 19 年里,年化正好 2.6% —— 等于贷款利率,这是数学必然。
+    所以判断标准只有一条:你的投资能不能稳定超过 2.6%。
+  </div>
+
+  <div class="tbl">
+    <div class="th"><span>放钱的地方</span><span>年化</span><span>对比 2.6%</span></div>
+    <div class="tr"><span>活期</span><span class="n">0.3%</span><span class="bad">远不如</span></div>
+    <div class="tr"><span>货币基金</span><span class="n">1.5%</span><span class="bad">不如</span></div>
+    <div class="tr"><span>3年大额存单</span><span class="n">1.8~2.0%</span><span class="bad">不如</span></div>
+    <div class="tr"><span>10年国债</span><span class="n">2.0~2.3%</span><span class="bad">不如</span></div>
+    <div class="tr"><span>储蓄型保险</span><span class="n">2.5~3.0%</span><span class="mid">打平</span></div>
+    <div class="tr"><span>沪深300 长期</span><span class="n">6~8%</span><span class="mid">高但波动大</span></div>
+  </div>
+
+  <div class="note">
+    <b>无风险产品里基本找不到能打败 2.6% 的</b> —— 这就是公积金被叫做"最便宜的钱"的原因。
+    股票期望收益更高,但那是完全不同量级的风险。<br>
+    我们现在这笔钱是买房结婚的储备,不是闲钱。
+    股市跌 30% 不只是少赚,是装修款和结婚钱没了。
+    <b>除非已经有三年以上稳定超过 6% 的实际记录,否则还贷。</b>
+  </div>
+
+  <div class="ctxt" style="margin-top:26px">
+    <b>冲还贷不一样,这个无脑开。</b>
+    公积金账户里的钱躺着只有 1.5% 利息,拿去抵 2.6% 的房贷,稳赚 1.1%。
+    而且不用掏现金,办一次手续之后每月自动扣。放款后立刻去办。
+  </div>
+
+  <div class="note s">
+    假设两人月缴合计 5,000元,30年是 180万 —— <b>等于月供有一半是公积金在替我们付</b>。
+    实际每月自己掏的钱不是 9,608,而是 4,600 左右。
+  </div>
+</section>
+
+<section class="full">
+  <div class="sec">
+    <span class="no">08</span>
+    <h2 class="hand">能省多少</h2>
+    <span class="line"></span>
+    <span class="amt n">最多省 67.5万</span>
+  </div>
+  <div class="list">
+    <div class="li"><span class="lb">挑满五唯一的房子<small>比不满二的省下增值税和个税</small></span>
+      <span class="v n" style="color:var(--sage)">25<i>万</i></span></div>
+    <div class="li"><span class="lb">房子状态好,只做局部翻新<small>硬装 30万 → 15万</small></span>
+      <span class="v n" style="color:var(--sage)">15<i>万</i></span></div>
+    <div class="li"><span class="lb">彩礼按低档<small>18万 → 10万,看两家商量</small></span>
+      <span class="v n" style="color:var(--sage)">8<i>万</i></span></div>
+    <div class="li"><span class="lb">蜜月往后排<small>等安顿好了再去</small></span>
+      <span class="v n" style="color:var(--sage)">4<i>万</i></span></div>
+    <div class="li"><span class="lb">家具家电分批添<small>10万 → 7万,有现成的先用</small></span>
+      <span class="v n" style="color:var(--sage)">3<i>万</i></span></div>
+    <div class="li"><span class="lb">婚纱照以后再拍</span>
+      <span class="v n" style="color:var(--sage)">1.5<i>万</i></span></div>
+    <div class="li"><span class="lb">三金婚戒选素圈<small>克重和款式都影响</small></span>
+      <span class="v n" style="color:var(--sage)">3<i>万</i></span></div>
+    <div class="li"><span class="lb">房价谈到 380万<small>首付跟着降 8万</small></span>
+      <span class="v n" style="color:var(--sage)">8<i>万</i></span></div>
+    <div class="li sum"><span class="lb">全都省下来 · 总额降到 175.5万</span>
+      <span class="v n" style="color:var(--sage)">67.5<i>万</i></span></div>
+  </div>
+  <div class="note">
+    优先级从上往下。<b>挑满五唯一是性价比最高的一项</b>,只是筛房条件,不影响住得好不好。
+    硬装那 15万 别硬省 —— 住进去之后最难返工。
+  </div>
+  <div class="note s">
+    <b>买房和结婚尽量别挤在同一年。</b>
+    172万 集中在一两个月出掉,装修又跟着 42万,再加结婚开销会很紧。
+    可以先领证买房 —— 领证还有个好处,公积金按家庭算额度能贷更多。
+  </div>
+</section>
+
+<section class="full">
+  <div class="sec">
+    <span class="no">09</span>
+    <h2 class="hand">要留意</h2>
+    <span class="line"></span>
+  </div>
+  <div class="warn">
+    <div class="wi"><span class="k">01</span><div class="b">
+      <div class="h">房子要满二,不然多掏 <em>25万</em></div>
+      <div class="d">卖家持有不满两年,增值税加个税会压到买家头上。看房产证日期就知道。</div>
+    </div></div>
+    <div class="wi"><span class="k">02</span><div class="b">
+      <div class="h">评估价偏低,首付要补</div>
+      <div class="d">贷款按评估价放,不是成交价。只评到 380万 的话首付多出 20万。老房子常见。</div>
+    </div></div>
+    <div class="wi"><span class="k">03</span><div class="b">
+      <div class="h">房子太老,贷款年限会缩</div>
+      <div class="d">房龄加年限一般不超过 40~50年。25年 的房子可能只批 20年,月供涨到 12,800 左右。</div>
+    </div></div>
+    <div class="wi"><span class="k">04</span><div class="b">
+      <div class="h">公积金放款慢,卖家可能不等</div>
+      <div class="d">比商贷多一两个月。能选的房子会少些,要多花时间挑。</div>
+    </div></div>
+    <div class="wi"><span class="k">05</span><div class="b">
+      <div class="h">公积金余额先别取</div>
+      <div class="d">要贷满 240万,余额必须留着撑额度。放款后开"按月冲还贷",每月自动抵扣。</div>
+    </div></div>
+  </div>
+  <div class="note">
+    <b>三个数字还要去官方确认:</b>契税 1%、公积金上限 240万、利率 2.6%。
+    打 12329 问公积金,12366 问税,或用上海公积金 App 的额度试算,填真实余额最准。
+  </div>
+</section>
+
+<div class="end full">
+  <div class="l hand">慢慢来,一点一点攒<br>会有一个我们自己的家的</div>
+</div>
+
+</div>
+
+<script>
+(function(){
+  var ids=['i-cai','i-jin','i-oth','i-house','i-reno','i-pct','i-pct2'],el={};
+  ids.forEach(function(k){el[k]=document.getElementById(k)});
+  var rm=document.getElementById('r-m'),rf=document.getElementById('r-f'),
+      rt=document.getElementById('r-t'),dm=document.getElementById('d-m'),
+      df=document.getElementById('d-f'),
+      pc=document.getElementById('pct'),pc2=document.getElementById('pct2');
+
+  function num(x){var v=parseFloat(x.value);return isNaN(v)||v<0?0:v}
+  function fmt(v){return (Math.round(v*10)/10).toString().replace(/\.0$/,'')}
+
+  function calc(){
+    var cai=num(el['i-cai']), jin=num(el['i-jin']), oth=num(el['i-oth']),
+        hou=num(el['i-house']), ren=num(el['i-reno']),
+        p1=parseInt(el['i-pct'].value,10), p2=parseInt(el['i-pct2'].value,10);
+
+    // 男方固定:彩礼 + 三金婚戒
+    var fixedM = cai + jin;
+    // 买房按 p1 分,装修家具按 p2 分,其他婚礼开销按 p1 分
+    var houM = hou*p1/100, houF = hou*(100-p1)/100;
+    var renM = ren*p2/100, renF = ren*(100-p2)/100;
+    var othM = oth*p1/100, othF = oth*(100-p1)/100;
+
+    var m = fixedM + houM + renM + othM;
+    var f = houF + renF + othF;
+
+    pc.textContent = p1 + '%';
+    pc2.textContent = p2 + '%';
+    rm.innerHTML = fmt(m) + '<i>万</i>';
+    rf.innerHTML = fmt(f) + '<i>万</i>';
+    rt.textContent = fmt(m+f) + '万';
+
+    dm.innerHTML = '彩礼三金 '+fmt(fixedM)+'万<br>买房 '+fmt(houM)
+                 + '万 · 装修 '+fmt(renM)+'万';
+    df.innerHTML = f>0 ? ('买房 '+fmt(houF)+'万<br>装修 '+fmt(renF)+'万') : '不出资';
+  }
+  ids.forEach(function(k){el[k].addEventListener('input',calc)});
+  calc();
+})();
+
+/* ===== 贷款计算器 ===== */
+(function(){
+  var g=function(id){return document.getElementById(id)};
+  var amt=g('l-amt'),yr=g('l-yr'),rate=g('l-rate'),
+      pAmt=g('p-amt'),pYr=g('p-yr');
+  if(!amt) return;
+
+  function fm(v){return (Math.round(v*10)/10).toString().replace(/\.0$/,'')}
+  function thou(v){return Math.round(v).toString().replace(/\B(?=(\d{3})+(?!\d))/g,',')}
+
+  // 等额本息月供
+  function monthly(P,r,n){
+    if(r===0) return P/n;
+    var q=Math.pow(1+r,n);
+    return P*r*q/(q-1);
+  }
+  // 从第 k 期开始的剩余本金
+  function balance(P,r,n,pay,k){
+    var b=P;
+    for(var i=0;i<k;i++){ b = b*(1+r) - pay; if(b<0){b=0;break} }
+    return b;
+  }
+  // 给定本金/月供/月利率,算还清需要多少期
+  function periods(P,r,pay){
+    if(pay<=P*r) return Infinity;
+    return Math.log(pay/(pay-P*r))/Math.log(1+r);
+  }
+
+  function run(){
+    var P=parseFloat(amt.value)*10000,
+        n=parseInt(yr.value,10)*12,
+        ra=parseFloat(rate.value); if(isNaN(ra)||ra<0) ra=0;
+        var r=ra/100/12;
+
+    var pay=monthly(P,r,n);
+    var total=pay*n, interest=total-P;
+
+    g('lv').textContent=amt.value+'万';
+    g('ly').textContent=yr.value+'年';
+    g('o-pay').textContent=thou(pay);
+    g('o-int').textContent=fm(interest/10000);
+    g('o-all').textContent=fm(total/10000);
+
+    /* --- 提前还款 --- */
+    var pv=parseFloat(pAmt.value)*10000,
+        py=parseInt(pYr.value,10),
+        k=py*12;
+
+    g('py').textContent=py;
+    g('pa').textContent=fm(pv/10000)+'万';
+
+    if(k>=n || pv<=0){
+      g('psave').textContent='省 0万';
+      g('p-pay').textContent=thou(pay)+'元';
+      g('p-left').textContent=fm((n-k)/12)+'年';
+      return;
+    }
+
+    var bal=balance(P,r,n,pay,k);
+    var paidSoFar=pay*k;
+    if(pv>=bal){
+      // 一次性还清
+      var saved=(total-(paidSoFar+bal))/10000;
+      g('psave').textContent='省 '+fm(saved)+'万';
+      g('p-pay').textContent='已还清';
+      g('p-left').textContent='0年';
+      return;
+    }
+    var newBal=bal-pv;
+
+    if(mode==='cut'){
+      // 缩年限:月供不变,期数变短
+      var per=periods(newBal,r,pay);
+      var nt=paidSoFar+pv+pay*per;
+      g('psave').textContent='省 '+fm((total-nt)/10000)+'万';
+      g('p-pay').textContent=thou(pay)+'元';
+      g('p-left').textContent=fm(per/12)+'年';
+    }else{
+      // 减月供:期数不变,月供变小
+      var newPay=monthly(newBal,r,n-k);
+      var nt2=paidSoFar+pv+newPay*(n-k);
+      g('psave').textContent='省 '+fm((total-nt2)/10000)+'万';
+      g('p-pay').textContent=thou(newPay)+'元';
+      g('p-left').textContent=fm((n-k)/12)+'年';
+    }
+  }
+
+  var mode='cut';
+  Array.prototype.forEach.call(document.querySelectorAll('.sg'),function(b){
+    b.addEventListener('click',function(){
+      Array.prototype.forEach.call(document.querySelectorAll('.sg'),function(x){
+        x.classList.remove('on')});
+      b.classList.add('on'); mode=b.dataset.m; run();
+    });
+  });
+  [amt,yr,rate,pAmt,pYr].forEach(function(e){e.addEventListener('input',run)});
+  run();
+})();
+</script>
+</body>
+</html>

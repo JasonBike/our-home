@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#284e40">
+  <meta name="description" content="把买房、装修和结婚的每一份期待，放进两个人的安家计划。">
+  <title>我们的家 · 安家计划</title>
+  <link rel="icon" href="./assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="./assets/style.css">
+  <link rel="stylesheet" href="./assets/planning.css">
+  <script type="module" src="./assets/app.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">跳到主要内容</a>
+  <aside class="sidebar">
+    <a class="brand" href="#overview"><span class="brand-icon" data-icon="home"></span><span>我们的家<small>OUR LITTLE HOME</small></span></a>
+    <div class="sidebar-label">两个人的安家计划</div>
+    <nav aria-label="主导航">
+      <a href="#overview" data-page="overview"><span data-icon="grid"></span>计划总览<span class="nav-dot"></span></a>
+      <a href="#budget" data-page="budget"><span data-icon="wallet"></span>预算与分摊<span class="nav-dot"></span></a>
+      <a href="#loans" data-page="loans"><span data-icon="chart"></span>房贷小算盘<span class="nav-dot"></span></a>
+      <a href="#cashflow" data-page="cashflow"><span data-icon="calendar"></span>现金与底气<span class="nav-dot"></span></a>
+      <a href="#checklist" data-page="checklist"><span data-icon="check"></span>安家备忘录<span class="nav-dot"></span></a>
+    </nav>
+    <div class="sidebar-note"><span class="tiny-spark">✳</span><p>房子慢慢找，<br>日子好好过。</p><small>让每一份期待，都有着落。</small></div>
+    <div class="local-status"><span></span><small id="save-status">计划保存在本机</small></div>
+  </aside>
+  <div class="workspace">
+    <header class="topbar"><div class="breadcrumb">我们的家 <span>/</span> <b id="page-name">计划总览</b></div><div class="toolbar"><button class="button subtle" id="import-button"><span data-icon="upload"></span><span>导入</span></button><button class="button subtle" id="export-button"><span data-icon="download"></span><span>导出计划</span></button><button class="icon-button" id="print-button" aria-label="打印完整计划" title="打印完整计划"><span data-icon="print"></span></button></div></header>
+    <main id="main">
+      <section id="overview" class="page" aria-labelledby="overview-heading">
+        <div class="page-heading"><div><div class="eyebrow">A LITTLE PLAN, A LOVELY LIFE</div><h1 id="overview-heading">把日子，过成我们的家<span class="heading-spark">✳</span></h1><p>从第一笔预算，到一盏为彼此留的灯。</p></div><span class="location"><span data-icon="pin"></span>上海 · 二手房计划</span></div>
+        <div class="hero">
+          <div class="hero-copy"><span class="pill light">我们的安家预算</span><div class="hero-amount"><span data-out="total">250.3</span><small>万元</small></div><p>买房、装修、结婚，还有一份安心的备用金。</p><div class="hero-tags"><span>房价 <b data-out="price">400</b> 万</span><span data-out="modeLabel">纯公积金贷款</span><span>结婚不办婚礼</span></div><a class="button cream" href="#budget">一起调整预算 <span>↗</span></a></div>
+          <div class="hero-art"><img src="./assets/home.svg" alt="午后的小家：绿色沙发、阳光、植物，还有一只熟睡的小猫" width="520" height="330"><span class="art-caption">A place to call ours.</span></div>
+        </div>
+        <div class="stats">
+          <article class="stat"><div class="stat-top"><span>拿钥匙前准备</span><span class="stat-icon peach" data-icon="key"></span></div><div class="stat-value"><span data-out="ready">172.3</span><small>万</small></div><p>首付 + 税费，不含备用金</p></article>
+          <article class="stat"><div class="stat-top"><span>每月房贷</span><span class="stat-icon sage" data-icon="calendar"></span></div><div class="stat-value"><span data-out="payment">9,608</span><small>元 / 月</small></div><p><span data-out="years">30</span> 年等额本息 · <span data-out="rate">2.6</span>% 公积金利率</p></article>
+          <article class="stat"><div class="stat-top"><span>预留一点从容</span><span class="stat-icon yellow" data-icon="shield"></span></div><div class="stat-value"><span data-out="reserve">12</span><small>万</small></div><p>已计入总预算，用于购房意外支出</p></article>
+        </div>
+        <div class="overview-grid">
+          <article class="card allocation-card"><div class="card-heading"><h2>钱都花在哪里</h2><a href="#budget" class="text-link">查看明细 ↗</a></div><div class="allocation-body"><div class="donut" id="budget-donut" role="img" aria-label="预算构成"><div><small>现金总预算</small><strong data-out="total">250.3</strong><span>万元</span></div></div><div class="legend" id="budget-legend"></div></div><div class="card-foot"><span data-icon="info"></span>不含未来房贷本息；备用金属于预留资金。</div></article>
+          <article class="card timeline-card"><div class="card-heading"><h2>一步一步，住进新家</h2><span class="tag">预计约半年</span></div><ol class="timeline"><li><span class="timeline-dot"></span><div><small>签约时</small><strong>付定金，留住心仪的家</strong><p>5～10 万，计入首付款，不重复相加</p></div></li><li><span class="timeline-dot"></span><div><small>签约至过户</small><strong>备好首付与税费 <em><span data-out="ready">172.3</span> 万</em></strong><p>另留 <span data-out="reserve">12</span> 万备用，付款节点写进合同</p></div></li><li><span class="timeline-dot"></span><div><small>拿钥匙后 3～4 个月</small><strong>把房子变成喜欢的样子</strong><p>装修、家具家电与搬家 <span data-out="renovation">42</span> 万</p></div></li><li><span class="timeline-dot last" data-icon="heart"></span><div><small>准备好了的那一天</small><strong>搬进去，开始我们的日常</strong></div></li></ol></article>
+        </div>
+        <div class="gentle-note"><span data-icon="heart"></span><div><strong>预算算齐了，还要看付完之后剩多少。</strong><p id="overview-readiness">可用现金先留空，预算和双方分摊可以先商量；生活支出本轮暂不纳入。</p></div><a href="#cashflow" class="text-link">看看现金安排 ↗</a></div>
+      </section>
+
+      <section id="budget" class="page" aria-labelledby="budget-heading" hidden>
+        <div class="page-heading"><div><div class="eyebrow">MAKE ROOM FOR WHAT MATTERS</div><h1 id="budget-heading">每一笔，都一起商量</h1><p>改动会同步到总预算与双方分摊。所有金额单位为万元。</p></div><button class="button outline" id="simple-button">试试轻装修方案 ↗</button></div>
+        <div class="budget-summary"><span>当前现金总预算 <strong><span data-out="total"></span><small> 万</small></strong></span><span>买房 <b data-out="home"></b> + 装修 <b data-out="renovation"></b> + 结婚 <b data-out="wedding"></b></span></div>
+        <div class="budget-grid">
+          <article class="card"><div class="card-heading"><h2><span class="section-number">01</span>买房与备用</h2><span class="tag">上海 · 二手房</span></div><div id="house-fields"></div><div class="derived-row"><span>首付款<small>房价 − 实际贷款本金</small></span><strong><span data-out="down"></span> 万</strong></div><p class="field-note">贷款参数在「房贷小算盘」调整。税费默认保留原稿 12.3 万未拆分估算；可在下方核实条件后应用税费试算。</p><div class="subtotal"><span>购房现金小计</span><strong><span data-out="home"></span> 万</strong></div></article>
+          <article class="card"><div class="card-heading"><h2><span class="section-number">02</span>装修与生活</h2><span class="tag">一点点添置</span></div><div id="renovation-fields"></div><p class="field-note">原稿按全屋翻新估算。轻装修方案将硬装调为 15 万、家具家电合计调为 7 万。</p><div class="subtotal"><span>装修搬家小计</span><strong><span data-out="renovation"></span> 万</strong></div></article>
+          <article class="card wedding-card"><div class="card-heading"><h2><span class="section-number">03</span>简单，也很郑重</h2><span class="tag">结婚 · 不办婚礼</span></div><div id="wedding-fields" class="wedding-fields"></div><div class="field-note">原稿逐项范围合计 16.8～35 万；当前以右侧可调整金额为准。彩礼、三金与婚戒的分摊沿用原稿约定。</div><div class="subtotal"><span>结婚预算小计</span><strong><span data-out="wedding"></span> 万</strong></div></article>
+        </div>
+        <article class="card tax-card" style="margin-top:23px"><div class="card-heading"><div><h2><span data-out="price">400</span> 万是房价，交易还要准备多少？</h2><p>已按首套、税务认定的家庭唯一住房设置。面积和房源条件未知，先选情景，不替你猜。</p></div><span class="tag">上海 · 2026 政策</span></div>
+          <div class="tax-options">
+            <label>建筑面积<select id="select-areaBand" data-choice="areaBand"><option value="unknown">还没确定</option><option value="small">不超过 140㎡</option><option value="large">超过 140㎡</option></select></label>
+            <label>卖方住房条件<select id="select-sellerStatus" data-choice="sellerStatus"><option value="unknown">还没确定</option><option value="unique">满五且家庭唯一</option><option value="over2">满二，非满五唯一</option><option value="under2">持有不足两年</option></select></label>
+            <label>卖方税费谁承担<select id="select-sellerBurden" data-choice="sellerBurden"><option value="unknown">合同尚未谈定</option><option value="seller">卖方承担</option><option value="buyer">买方额外承担</option></select></label>
+            <label>需承担的卖方个税<select id="select-pitMode" data-choice="pitMode"><option value="unknown">尚未确认 / 不适用</option><option value="assessed">税务已确认按收入 1% 核定</option><option value="manual">填入核定的实际税额</option></select></label>
+          </div><div id="tax-fields" class="schedule-fields"></div><div class="tax-estimate" id="tax-estimate"></div>
+          <details><summary>这些税费怎么算，哪些不能直接套？</summary><p>首套家庭唯一住房：建筑面积 ≤140㎡按不含增值税成交价的 1%计契税，>140㎡按 1.5%。满二免增值税时，400 万对应契税 4 万或 6 万。<a href="https://shanghai.chinatax.gov.cn/xwdt/ztzl/grsx/fwjy/grfclsx/202411/t474229.html" target="_blank" rel="noreferrer">契税依据 ↗</a></p><p>不满二按含税成交价 ÷1.03×3%计增值税。附加以增值税为基数；本例按市区城建税 7%、教育附加 3%、地方教育附加 2%及减半优惠，合计按增值税的 6%估算，可改为实际适用比例。400 万对应增值税约 11.65 万、附加约 0.70 万。<a href="https://shanghai.chinatax.gov.cn/xwdt/ztzl/grsx/fwjy/csfclsx/202411/t474236.html" target="_blank" rel="noreferrer">增值税与个税依据 ↗</a></p><p>满五唯一的卖方个税可免；其他房源一般根据扣除原值、税费和合理费用后的所得按 20%计税。只有符合税务核定条件才采用转让收入的 1%，不能凭“非满五唯一”直接套用；继承、受赠等特殊来源另核。原值未知时，这里填写实际核定税额。<a href="https://shanghai.chinatax.gov.cn/xwdt/ztzl/grsx/fwjy/csfclsx/202411/t474237.html" target="_blank" rel="noreferrer">满二住房个税依据 ↗</a></p><p>中介费 1%仅是可改的示例费率，按买方实际承担比例填写，并非法定标准。住宅转移登记通常 80 元/件；抵押登记费由抵押权人缴纳，不能一概再加给买方；额外证书、评估等按实际发生额填写。<a href="https://ghzyj.sh.gov.cn/ywlc/20200324/0032-827031.html" target="_blank" rel="noreferrer">登记费依据 ↗</a></p><p>本例把房价作为含税计税成交价；合同若写的是卖方净到手价，需要重新确认合同总价与税基，不能把净价直接代入。这里只试算普通个人住房交易，不处理特殊产权、赠与继承、税务调增或税费承担引起的合同价调整。</p></details>
+        </article>
+        <article class="card split-card"><div class="card-heading"><h2>两个人，各准备多少</h2><span class="tag">一起商量的比例</span></div><div class="split-layout"><div><p class="field-note">沿用原稿：彩礼、三金、婚戒由男方先付；其他部分分别调整比例。彩礼即使转回小家，也先保留这笔支付需求；到账时间在「现金与底气」填写。这是资金分工，不表示房产产权比例。</p><div id="split-fields"></div></div><div class="split-results"><div class="person-result male"><span>男方先行准备</span><strong><span data-out="male"></span><small> 万</small></strong><p id="male-breakdown"></p></div><div class="person-result female"><span>女方先行准备</span><strong><span data-out="female"></span><small> 万</small></strong><p id="female-breakdown"></p></div><div class="split-bar" id="split-bar"></div><small class="rounding-note">按未舍入金额计算；不含单独留存的生活应急金。</small></div></div></article>
+      </section>
+
+      <section id="loans" class="page" aria-labelledby="loans-heading" hidden>
+        <div class="page-heading"><div><div class="eyebrow">LESS GUESSING, MORE CLARITY</div><h1 id="loans-heading">让每个月，都心里有数</h1><p>少一点首付，还是少一点月供？把两种生活节奏放在一起看。</p></div><span class="location">等额本息测算</span></div>
+        <div class="loan-layout"><article class="card loan-settings"><div class="card-heading"><h2>我们的贷款参数</h2></div><div id="loan-fields"></div><p class="field-note">公积金额度沿用原稿 240 万假设；实际额度取决于家庭、补充公积金及审核。商贷利率为可调试算值。所有对比统一使用这里的年限。</p></article><div><div class="loan-options" id="loan-options"></div><p class="field-note">选择方案后，首付、预算总额和分摊自动联动。两种方案均保留同一笔装修、结婚及备用预算。</p><div class="card offset-card"><div><span class="eyebrow">每月现金安排</span><h2>公积金冲还贷后</h2><p>假设可按月抵扣 <span data-out="offset"></span> 元</p></div><div><strong data-out="outOfPocket"></strong><span>元 / 月，需另备现金</span></div></div><p class="field-note">冲还贷按抵扣月供模拟，不另外减少本金；抵扣资格、余额与办理方式需向贷款机构确认。</p></div></div>
+        <article class="card income-card"><div class="card-heading"><h2>月供在我们的收入里，占多少</h2><span class="tag">生活费暂未扣除</span></div><div id="income-results"></div></article>
+        <article class="card prepay-card"><div class="card-heading"><div><h2>提前还一点，未来轻松一点</h2><p>这里只测算公积金部分；组合贷中的商业贷款保持原计划。</p></div><span class="tag">逐月计算利息</span></div><div class="prepay-layout"><div><div id="prepay-fields"></div><div class="segmented" role="group" aria-label="提前还款方式"><button data-prepay="term">月供不变 · 缩短年限</button><button data-prepay="payment">年限不变 · 降低月供</button></div><p class="field-note">在所选年份末正常还款后，提前偿还一笔。不含可能的手续费；提前还款金额最多取剩余本金。</p></div><div class="prepay-results"><span>预计少付利息</span><strong><span data-out="saved"></span><small> 万元</small></strong><div class="mini-results"><div><span>之后公积金月供</span><b><span data-out="newPayment"></span> 元</b></div><div><span>还需偿还</span><b data-out="remaining"></b></div></div><p id="prepay-note"></p></div></div><details><summary>同样一笔钱，早还和晚还差多少？</summary><div class="table-scroll"><table><thead><tr><th>提前还款时间</th><th>缩年限 · 省息</th><th>减月供 · 省息</th></tr></thead><tbody id="prepay-table"></tbody></table></div></details></article>
+      </section>
+
+      <section id="cashflow" class="page" aria-labelledby="cashflow-heading" hidden>
+        <div class="page-heading"><div><div class="eyebrow">A HOME, AND ROOM TO BREATHE</div><h1 id="cashflow-heading">买得下，也要过得稳</h1><p>总预算是一张清单。真正的底气，是每个付款节点都接得住。</p></div><span class="location">未来 12 个月 · 月度模拟</span></div>
+        <div class="analysis-intro"><span class="section-number">先把口径分清</span><div><h2>先要拿得出，和最后花掉多少，是两回事。</h2><p>首付变成房屋权益，家具成为家里的物品，彩礼可能留在家庭内部，备用金可能没有花掉。这里单独安排一次性付款，工资与房贷在还贷计算器里看。生活费暂未纳入，也不把未来整份工资当作可用存款。</p></div></div>
+        <div class="cash-input-grid"><article class="card"><div class="card-heading"><h2>现在能安排的资金</h2><span class="tag">未知就留空</span></div><div id="cash-fields"></div><p class="field-note">现金不含公积金账户、未到账年终奖、难以变现的资产。家庭支持只填已确定且未计入现有现金的金额；没有就填 0。未来工资不计入这里的现有现金。</p></article><article class="card"><div class="card-heading"><h2>还没商量好的钱，先留白</h2><span class="tag">不编造预估资产</span></div><div class="analysis-item"><h3>预算反过来告诉我们要准备多少</h3><p>当前方案需要 <b data-out="total"></b> 万一次性资金，包含 <b data-out="reserve"></b> 万购房备用。可用现金还没确定，也不妨碍比较两人的分摊比例。</p></div><div class="analysis-item"><h3>到账时间，与金额一样重要</h3><p>晚到的家庭支持、彩礼返还，不能解决更早的首付缺口；已经在存款中的钱不能再计一次到账。</p></div><div class="analysis-item"><h3>生活支出这一轮先不展开</h3><p>这里暂不计算生活应急金，也不据此下“买得起”的结论。工资、月供和公积金抵扣放在房贷页，不冲减本页的一次性付款。</p></div><a class="text-link" href="#loans">看看每月还贷情况 ↗</a></article></div>
+        <div class="cash-results" id="cash-results"></div>
+        <article class="card schedule-card"><div class="card-heading"><div><h2>把大额付款，放到日历里</h2><p>第 1 个月从开始执行计划算起，改动月份后，重新检查最低余额。</p></div><span class="tag">不是交易进度承诺</span></div><div class="schedule-fields" id="schedule-fields"></div><div class="assumption-note">模拟约定：第 1 月付定金（至多 10 万，包含在首付中）；硬装及装修补充项目按 30% / 40% / 30% 在过户、下一月、入住月支付，月份重叠时合并；家具家电、租房搬家在入住月汇总，结婚费用在所选月汇总。实际租金、押金或婚宴订金可能更早发生，需另核合同。此页不模拟工资、月供和生活消费，只安排一次性资金。</div><div id="cash-chart" class="cash-chart"></div><details open><summary>展开 12 个月的现金明细</summary><div class="table-scroll"><table class="cash-table"><thead><tr><th>月份 / 大额事项</th><th>流入（万）</th><th>流出（万）</th><th>计划资金余额（万）</th><th>可安排余额（万）</th></tr></thead><tbody id="cash-table"></tbody></table></div></details><p class="field-note">可安排余额 = 本计划资金余额 − 购房备用金。流入只含已确定的家庭支持和彩礼转回，流出只含一次性支出；未扣除房贷与日常消费，所以不是未来银行账户余额。同月收支按合计计算，仍要检查月内付款与到账先后。</p></article>
+        <div class="analysis-grid"><article class="card"><div class="card-heading"><h2>三个值得先想一遍的变化</h2></div><div id="stress-cases"></div></article><article class="card"><div class="card-heading"><h2>总额之外，容易漏掉的账</h2></div><div class="analysis-item"><h3>交易：别只问“税费多少”</h3><p>分别列出契税、卖方税费是否转嫁、中介佣金、登记评估、资金安排费用。中介费每差房价的 0.5%，400 万房子就差 2 万。按已核实报价计入交易费用。</p></div><div class="analysis-item"><h3>装修：先问报价包到哪里</h3><p>拆旧清运、门窗、柜体、设计监理、成品保护、窗帘灯具、网络和开荒保洁，最容易在不同报价里遗漏或重复。硬装与家具的柜子也要对一次清单。</p></div><div class="analysis-item"><h3>结婚：不办婚礼，也有零碎安排</h3><p>双方家人交通住宿、服装化妆、摄影加片和餐饮加桌等，先确认是否需要。订金和尾款分开问日期；是否把三金中的戒指再算进婚戒，也要说清楚。</p></div><div class="analysis-item"><h3>接下来两年：还有没有别的大事</h3><p>备孕育儿、换车、赡养、换工作或进修，应单独做时间和资金计划。没有金额就先标待办，不把未经确认的花费或支持塞进预算。</p></div><a href="#budget" class="text-link">把确认的遗漏补进预算 ↗</a></article></div>
+      </section>
+
+      <section id="checklist" class="page" aria-labelledby="checklist-heading" hidden>
+        <div class="page-heading"><div><div class="eyebrow">ONE SMALL STEP AT A TIME</div><h1 id="checklist-heading">安家路上，别忘了这些</h1><p>把不确定的事，一件件变成安心。</p></div><span class="location" id="check-progress">0 / 9 已完成</span></div>
+        <div class="checklist-layout"><article class="card"><div class="card-heading"><h2>签约前，先问清楚</h2><span data-icon="check"></span></div><div id="checklist-items"></div></article><div class="checklist-aside"><article class="card savings-card"><span class="eyebrow">留一点余地</span><h2>预算可以减，<br>生活不必打折。</h2><div class="saving-item"><span>局部翻新，保留好状态</span><strong>参考省 15 万</strong></div><div class="saving-item"><span>家具家电，按需添置</span><strong>参考省 3 万</strong></div><div class="saving-item"><span>蜜月、婚纱照，往后排</span><strong>按当前预算调整</strong></div><p>税费优惠与房价谈判单独核算，不与其他假设重复相加。房价降低时，首付按实际贷款额重新计算。</p><a class="text-link" href="#budget">回到预算，试着调一调 ↗</a></article><article class="card sources-card"><h2>数字的来处</h2><p>预算源于原始安家计划；政策参考以下官方文件。测算不代表贷款审批或税费核定。</p><a href="https://www.shanghai.gov.cn/xbhygq/20260228/87e93e4c373c4bfe81af5557a77d2e70.html" target="_blank" rel="noreferrer">上海公积金贷款额度 · 2026 ↗</a><a href="https://www.shzfgjj.cn/html/newxxgk/zcwj/gjjgwh/albpl/dk/227927.html" target="_blank" rel="noreferrer">公积金贷款利率通知 · 2025 ↗</a><a href="https://shanghai.chinatax.gov.cn/zzzb/zcwj/202601/t478899.html" target="_blank" rel="noreferrer">住房增值税政策 · 2026 ↗</a><a href="https://www.shanghai.gov.cn/nw17239/20260423/db84274a588149309032977a3df7f916.html" target="_blank" rel="noreferrer">上海住房交易税费梳理 · 2026 ↗</a><small>资料核对：2026-09-22</small></article></div></div>
+      </section>
+      <footer><span>OUR LITTLE HOME <i>·</i> 慢慢来，会有我们自己的家。</span><button id="reset-button">恢复示例计划</button></footer>
+    </main>
+  </div>
+  <input type="file" id="import-file" accept=".json,application/json" hidden>
+  <div id="toast" role="status" aria-live="polite"></div>
+  <dialog id="reset-dialog"><form method="dialog"><span class="eyebrow">重新出发</span><h2>恢复最初的示例计划？</h2><p>当前预算和待办会被替换。想留住现在的方案，可以先导出一份。</p><div class="dialog-actions"><button class="button outline" value="cancel">保留当前计划</button><button class="button primary" value="reset">恢复示例</button></div></form></dialog>
+  <noscript><div class="noscript">请启用 JavaScript，以查看和调整完整预算。</div></noscript>
+</body>
+</html>
