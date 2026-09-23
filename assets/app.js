@@ -2,12 +2,24 @@ import { defaults, limits, personalKeys, choices, sanitize, budget, cashflow, pr
 
 const $ = id => document.getElementById(id);
 const storageKey = 'our-home.plan.v2';
+const apiBase = '/api';
 let state = sanitize(defaults);
-let storageAvailable = true;
-try {
-  const saved = JSON.parse(localStorage.getItem(storageKey) || localStorage.getItem('our-home.plan.v1') || 'null');
-  if (saved?.version === 1 || saved?.version === 2) state = sanitize(saved.plan);
-} catch { storageAvailable = false; }
+let activeProfile = null;
+let saveTimer;
+let saveInFlight = Promise.resolve();
+const localPlan = () => { try { const saved = JSON.parse(localStorage.getItem(storageKey) || localStorage.getItem('our-home.plan.v1') || 'null'); return saved?.version === 1 || saved?.version === 2 ? sanitize(saved.plan) : null; } catch { return null; } };
+async function api(path, options = {}) {
+  const response = await fetch(`${apiBase}${path}`, { credentials: 'same-origin', headers: { 'Content-Type': 'application/json', ...(options.headers || {}) }, ...options });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(data.error || '请求失败');
+  return data;
+}
+function authMessage(message = '', tone = 'error') { const element = $('auth-message'); element.textContent = message; element.dataset.tone = tone; }
+function showAuthForm(mode = 'login') { $('login-form').hidden = mode !== 'login'; $('register-form').hidden = mode !== 'register'; $('profile-picker').hidden = true; authMessage(''); }
+function showGate() { document.body.classList.remove('signed-in'); $('profile-gate').hidden = false; showAuthForm('login'); }
+function showPicker() { $('login-form').hidden = true; $('register-form').hidden = true; $('profile-picker').hidden = false; authMessage(''); }
+function escapeHtml(value) { return String(value).replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char])); }
+function formatDate(value) { const date = new Date(value); return Number.isNaN(date.getTime()) ? '刚刚建立' : `最近更新 ${date.toLocaleDateString('zh-CN')}`; }
 const money = (n, digits = 1) => n.toLocaleString('zh-CN', { maximumFractionDigits: digits });
 const yuan = n => money(n, 0);
 const icons = {
@@ -54,7 +66,7 @@ fields['schedule-fields'] = [['closingMonth', '第几月过户', '按计划支�
 for (const [container, items] of Object.entries(fields)) {
   $(container).innerHTML = items.map(([key, label, hint, unit]) => `<div class="input-row"><label for="field-${key}">${label}<small>${hint}</small></label><div class="number-control"><input id="field-${key}" data-field="${key}" type="number" inputmode="decimal" min="${limits[key][0]}" max="${limits[key][1]}" step="${['years', 'prepayYear', 'offset', 'closingMonth', 'moveMonth', 'weddingMonth', 'supportMonth', 'returnMonth'].includes(key) ? 1 : 'any'}" value="${state[key] ?? ''}" placeholder="待填" aria-label="${label}（${unit}）"><span>${unit}</span></div></div>`).join('');
 }
- $('split-fields').innerHTML = [['houseShare', '买房与备用', '首付、税费、备用金'], ['renovationShare', '装修与生活', '硬装、家具家电、搬家'], ['weddingShare', '其他结婚开销', '见面宴、礼物、喜糖、婚纱照、蜜月']].map(([key, title, hint]) => `<div class="range-field"><div class="range-top"><label for="field-${key}">${title} · 男方承担<small style="display:block;color:#8d9b80;font-size:10px;line-height:1.6;font-weight:400">${hint}</small></label><output for="field-${key}" id="output-${key}">${state[key]}%</output></div><input type="range" min="0" max="100" step="5" id="field-${key}" data-field="${key}" value="${state[key]}" aria-label="${title}男方承担比例"><div class="range-foot"><span>女方全额</span><span>两人对半</span><span>男方全额</span></div></div>`).join('');
+ $('split-fields').innerHTML = [['houseShare', '买房与备用', '首付、税费、备用金'], ['renovationShare', '装修与生活', '硬装、家具家电、搬家'], ['weddingShare', '其他结婚开销', '见面宴、礼物、喜糖、婚纱照、蜜月']].map(([key, title, hint]) => `<div class="range-field"><div class="range-top"><label for="field-${key}">${title} · 男方承担<small class="range-hint">${hint}</small></label><output for="field-${key}" id="output-${key}">${state[key]}%</output></div><input type="range" min="0" max="100" step="5" id="field-${key}" data-field="${key}" value="${state[key]}" aria-label="${title}男方承担比例"><div class="range-foot"><span>女方全额</span><span>两人对半</span><span>男方全额</span></div></div>`).join('');
 
 const tasks = [
   ['确认家庭实际可贷额度', '现行首套家庭基本最高额度 200 万，符合补充公积金条件可再增加最高 40 万。240 万不是每个家庭都能贷满，结合缴存、余额等做正式试算。'],
@@ -82,7 +94,7 @@ function render() {
   const remaining = pp.remainingMonths ? `${Math.floor(pp.remainingMonths / 12)} 年 ${pp.remainingMonths % 12} 个月` : '已结清';
   const outputs = Object.fromEntries(['price', 'reserve', 'years', 'rate'].map(k => [k, money(state[k])]));
   Object.assign(outputs, Object.fromEntries(['total', 'ready', 'home', 'down', 'renovation', 'wedding'].map(k => [k, money(b[k])])), {
-    male: money(b.male, 2), female: money(b.female, 2), payment: yuan(b.payment), outOfPocket: yuan(b.outOfPocket), offset: yuan(b.offset), fundDeposit: yuan(b.fundDeposit), incomeTotal: payroll ? yuan(payroll.netTotal) : '待填写', grossTotal: payroll ? yuan(payroll.grossTotal) : '待填写',
+    male: money(b.male, 2), female: money(b.female, 2), payment: yuan(b.payment), outOfPocket: yuan(b.outOfPocket), offset: yuan(b.offset), fundDeposit: payroll?.complete ? yuan(payroll.fundDeposit) : payroll ? '待双方填写' : yuan(state.offset), incomeTotal: payroll?.complete ? yuan(payroll.netTotal) : '待双方填写', grossTotal: payroll?.complete ? yuan(payroll.grossTotal) : '待双方填写',
     modeLabel: state.mode === 'fund' ? '纯公积金贷款' : '公积金 + 商业组合贷', saved: money(pp.saved / 10000, 2), newPayment: yuan(pp.payment), remaining
   });
   setOutput(outputs);
@@ -125,9 +137,10 @@ function renderCashflow(b) {
     + resultCard('当前一次性资金缺口', c.gap === null ? '待填写' : `${money(c.gap, 2)} <small>万</small>`, '只比较当前现金和本页一次性计划；不等同于整体财务是否安全。');
   $('overview-readiness').textContent = c.missing.length ? '可用现金仍在商量，可以先看预算与分摊。工资和月供单独算，生活支出这轮暂未纳入。' : `当前一次性计划资金缺口 ${money(c.gap, 2)} 万；月供与生活支出另行安排，不用未来工资填平这里的缺口。`;
   const payroll = payrollSummary(state);
-  const totalIncome = payroll?.netTotal ?? null;
-  const payrollDetails = payroll ? [payroll.a, payroll.b].map((item, i) => `<div class="analysis-item"><h3>${i === 0 ? '一方' : '另一方'} · 税前 ${yuan(item.gross)} 元</h3><p>社保 ${yuan(item.social)} 元 · 公积金基数 ${yuan(item.fundBase)} 元 · 个人公积金 ${yuan(item.employeeFund)} 元 · 预估个税 ${yuan(item.tax)} 元 · 税后到手 ${yuan(item.net)} 元 · 单位与个人公积金预计入账 ${yuan(item.employeeFund + item.employerFund)} 元</p></div>`).join('') : '';
-  $('income-results').innerHTML = totalIncome === null ? '<p class="field-note">填入双方税前月薪后，这里会按社保、公积金和全年平均个税估算税后到手。未知可留空，不采用虚构收入。</p>' : `<div class="income-metrics"><div><span>合同月供 / 税后到手</span><strong>${totalIncome > 0 ? money(b.payment / totalIncome * 100) + '%' : '无收入'}</strong></div><div><span>现金月供 / 税后到手</span><strong>${totalIncome > 0 ? money(b.outOfPocket / totalIncome * 100) + '%' : '无收入'}</strong></div><div><span>还贷后收入余量</span><strong>${yuan(totalIncome - b.outOfPocket)}<small> 元</small></strong></div></div>${payrollDetails}<p class="field-note">税后收入是全年平均估算，实际工资单按累计预扣，专项附加扣除和年终奖会让月度数字变化。未扣生活费、其他负债及年度支出，不等于每月可储蓄金额。若公积金暂停抵扣，需多留 ${yuan(b.offset)} 元 / 月。</p>`;
+  const totalIncome = payroll?.complete ? payroll.netTotal : null;
+  const payrollDetails = payroll ? [payroll.a, payroll.b].map((item, i) => item ? `<div class="analysis-item"><h3>${i === 0 ? '一方' : '另一方'} · 税前 ${yuan(item.gross)} 元</h3><p>社保 ${yuan(item.social)} 元 · 公积金基数 ${yuan(item.fundBase)} 元 · 个人公积金 ${yuan(item.employeeFund)} 元 · 预估个税 ${yuan(item.tax)} 元 · 税后到手 ${yuan(item.net)} 元 · 单位与个人公积金预计入账 ${yuan(item.employeeFund + item.employerFund)} 元</p></div>` : '').join('') : '';
+  const payrollNote = payroll && !payroll.complete ? '<p class="field-note">已显示已填写一方的估算；双方税前月薪都填好后，才计算家庭合计、月供占比和还贷后余量。</p>' : '';
+  $('income-results').innerHTML = !payroll ? '<p class="field-note">填入一方或双方税前月薪后，这里会按社保、公积金和全年平均个税估算税后到手。未知可留空，不采用虚构收入。</p>' : `${payrollDetails}${payrollNote}${totalIncome === null ? '' : `<div class="income-metrics"><div><span>合同月供 / 税后到手</span><strong>${totalIncome > 0 ? money(b.payment / totalIncome * 100) + '%' : '无收入'}</strong></div><div><span>现金月供 / 税后到手</span><strong>${totalIncome > 0 ? money(b.outOfPocket / totalIncome * 100) + '%' : '无收入'}</strong></div><div><span>还贷后收入余量</span><strong>${yuan(totalIncome - b.outOfPocket)}<small> 元</small></strong></div></div>`}<p class="field-note">税后收入是全年平均估算，实际工资单按累计预扣，专项附加扣除和年终奖会让月度数字变化。未扣生活费、其他负债及年度支出，不等于每月可储蓄金额。若公积金暂停抵扣，需多留 ${yuan(b.offset)} 元 / 月。</p>`;
   const extraCash = Math.max(0, b.fund - 200);
   const reduced = budget({ ...state, fund: Math.min(state.fund, 200) });
   const overrun = state.renovation * .1;
@@ -147,12 +160,62 @@ function syncInputs() {
   document.querySelectorAll('[data-choice]').forEach(input => { input.value = state[input.dataset.choice]; });
 }
 function save() {
-  try { localStorage.setItem(storageKey, JSON.stringify({ version: 2, plan: state })); storageAvailable = true; }
-  catch { storageAvailable = false; }
-  $('save-status').textContent = storageAvailable ? '已保存到本机浏览器' : '未能本地保存，请导出备份';
+  if (!activeProfile) return;
+  $('save-status').textContent = '正在保存计划…';
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => {
+    const profile = activeProfile;
+    saveInFlight = saveInFlight.then(() => api(`/profiles/${encodeURIComponent(profile.id)}`, { method: 'PUT', body: JSON.stringify({ name: profile.name, plan: state }) }))
+      .then(result => { activeProfile = result.profile; $('save-status').textContent = '计划已安全保存'; })
+      .catch(error => { $('save-status').textContent = `保存失败：${error.message}`; });
+  }, 350);
 }
 let toastTimer;
 function toast(message) { $('toast').textContent = message; $('toast').classList.add('visible'); clearTimeout(toastTimer); toastTimer = setTimeout(() => $('toast').classList.remove('visible'), 3500); }
+function renderProfiles(profiles = []) {
+  const list = $('profile-list');
+  $('legacy-import-button').hidden = Boolean(profiles.length || !localPlan());
+  list.innerHTML = profiles.length ? profiles.map(profile => `<div class="profile-entry"><div><strong>${escapeHtml(profile.name)}</strong><small>${formatDate(profile.updatedAt)}</small></div><button class="button outline" type="button" data-profile-id="${escapeHtml(profile.id)}">进入</button></div>`).join('') : '<div class="profile-empty">还没有配置。可以先新建一份计划，之后每次登录都能从这里继续。</div>';
+}
+async function openProfile(profileId) {
+  try {
+    const result = await api(`/profiles/${encodeURIComponent(profileId)}`);
+    activeProfile = result.profile;
+    state = sanitize(activeProfile.plan);
+    $('active-profile').textContent = activeProfile.name;
+    $('save-status').textContent = '计划已安全保存';
+    document.body.classList.add('signed-in');
+    $('profile-gate').hidden = true;
+    syncInputs(); render(); navigate();
+  } catch (error) { authMessage(error.message); }
+}
+async function loadProfiles() {
+  const result = await api('/profiles');
+  renderProfiles(result.profiles);
+  showPicker();
+}
+async function finishAuth(result) {
+  $('active-profile').textContent = result.user.username;
+  await loadProfiles();
+}
+async function submitAuth(form, path) {
+  const formData = new FormData(form);
+  const username = String(formData.get('username') || '').trim();
+  const password = String(formData.get('password') || '');
+  if (path === '/auth/register' && password !== String(formData.get('passwordAgain') || '')) throw new Error('两次输入的密码不一致');
+  authMessage('正在处理…', 'busy');
+  const result = await api(path, { method: 'POST', body: JSON.stringify({ username, password }) });
+  await finishAuth(result);
+}
+$('show-register').addEventListener('click', () => showAuthForm('register'));
+$('show-login').addEventListener('click', () => showAuthForm('login'));
+$('login-form').addEventListener('submit', async event => { event.preventDefault(); try { await submitAuth(event.currentTarget, '/auth/login'); } catch (error) { authMessage(error.message); } });
+$('register-form').addEventListener('submit', async event => { event.preventDefault(); try { await submitAuth(event.currentTarget, '/auth/register'); } catch (error) { authMessage(error.message); } });
+$('profile-list').addEventListener('click', event => { const button = event.target.closest('[data-profile-id]'); if (button) openProfile(button.dataset.profileId); });
+$('new-profile-form').addEventListener('submit', async event => { event.preventDefault(); const input = $('new-profile-name'); const name = input.value.trim(); if (!name) return; try { const result = await api('/profiles', { method: 'POST', body: JSON.stringify({ name, plan: defaults }) }); input.value = ''; await openProfile(result.profile.id); } catch (error) { authMessage(error.message); } });
+$('legacy-import-button').addEventListener('click', async () => { const plan = localPlan(); if (!plan) return; try { const result = await api('/profiles', { method: 'POST', body: JSON.stringify({ name: '原有本机计划', plan }) }); await openProfile(result.profile.id); } catch (error) { authMessage(error.message); } });
+$('logout-button').addEventListener('click', async () => { try { await api('/auth/logout', { method: 'POST', body: '{}' }); } catch { /* still return to the gate */ } activeProfile = null; showGate(); });
+$('switch-profile').addEventListener('click', () => { activeProfile = null; document.body.classList.remove('signed-in'); $('profile-gate').hidden = false; loadProfiles().catch(error => authMessage(error.message)); });
 document.querySelectorAll('[data-field]').forEach(input => {
   input.addEventListener('input', () => {
     const number = Number(input.value);
@@ -188,7 +251,13 @@ $('import-file').addEventListener('change', async event => {
     for (const [key, [min, max]] of Object.entries(limits)) {
       if (!Object.hasOwn(data.plan, key)) continue;
       if (personalKeys.includes(key) && data.plan[key] === null) continue;
-      if (typeof data.plan[key] !== 'number' || !Number.isFinite(data.plan[key]) || data.plan[key] < min || data.plan[key] > max) throw new Error('预算字段不完整或超出范围');
+      // v2 exports created before the 2026 housing-fund bounds accepted 0 as a
+      // manual base. Let those files through and let sanitize migrate the value
+      // to the current Shanghai range instead of rejecting the whole plan.
+      const legacyFundBase = data.version === 2 && ['fundBaseA', 'fundBaseB'].includes(key);
+      const lower = legacyFundBase ? 0 : min;
+      const upper = legacyFundBase ? 1000000 : max;
+      if (typeof data.plan[key] !== 'number' || !Number.isFinite(data.plan[key]) || data.plan[key] < lower || data.plan[key] > upper) throw new Error('预算字段不完整或超出范围');
     }
     if (!['fund', 'combo'].includes(data.plan.mode) || !['term', 'payment'].includes(data.plan.prepayMode) || !Array.isArray(data.plan.checks)) throw new Error('计划格式不完整');
     for (const [key, options] of Object.entries(choices)) if (Object.hasOwn(data.plan, key) && !options.includes(data.plan[key])) throw new Error('情景字段不完整');
@@ -208,5 +277,13 @@ function navigate() {
   window.scrollTo({ top: 0, behavior: 'instant' });
 }
 window.addEventListener('hashchange', navigate);
-$('save-status').textContent = storageAvailable ? '计划保存在本机浏览器' : '未能读取存档，请导出备份';
-render(); navigate();
+async function boot() {
+  try {
+    const result = await api('/me');
+    await finishAuth(result);
+  } catch (error) {
+    showGate();
+    if (!String(error.message).includes('未登录')) authMessage('暂时无法连接到数据服务，请使用 node server.mjs 启动项目。');
+  }
+}
+boot();

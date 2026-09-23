@@ -1,48 +1,49 @@
 # 我们的家
 
-两个人的买房、装修、结婚预算。纯静态 HTML / CSS / JavaScript，没有后端、数据库、构建步骤、CDN 或部署脚本。
+两个人的买房、装修、结婚预算。页面使用 HTML / CSS / JavaScript，配套一个无第三方依赖的 Node API 服务，用于账号登录和加密保存计划。
 
 ## 本地启动
 
-项目不需要安装依赖。macOS / Linux 直接运行：
+项目不需要安装依赖。启动 API 和页面服务：
 
 ```sh
 cd /Users/skadi/go/our-home
-python3 -m http.server 8788 --bind 127.0.0.1
+npm start
 ```
 
-然后打开 <http://127.0.0.1:8788/>。终端按 `Ctrl-C` 停止服务；如果 8788 端口已经被占用，可以换成其他端口，例如：
+然后打开 <http://127.0.0.1:8788/>。终端按 `Ctrl-C` 停止服务。也可以指定端口：
 
 ```sh
-python3 -m http.server 8888 --bind 127.0.0.1
+PORT=8888 npm start
 ```
 
-也可以用任意静态文件服务器启动。不要直接双击 `index.html`，因为页面使用 ES module，`file://` 下可能被浏览器的跨域策略拦截。
+不要再用纯静态文件服务器或直接双击 `index.html`：登录、API 和 ES module 都需要通过 `server.mjs` 访问。
 
 启动后可以用下面的命令确认入口和资源正常：
 
 ```sh
 curl -I http://127.0.0.1:8788/
-curl -I http://127.0.0.1:8788/assets/app.js
+curl -i http://127.0.0.1:8788/api/me
 ```
 
 ## 文件
 
-- `index.html`：入口，Nginx 直接托管。
+- `index.html`：登录入口和预算页面。
 - `assets/`：样式、计算逻辑、页面交互、本地 SVG 插画。
+- `server.mjs`：同源静态服务、账号 API、会话和加密计划存储。
+- `data/store.json`：服务端数据文件，已加入 `.gitignore`，其中的计划内容为加密密文。
 - `reference/original.html`：桌面原稿，仅备查，不参与计算。
 - `docs/预算分析.md`：原稿问题、预算口径、政策来源与未知项。
 - `tests/model.test.mjs`：计算模型测试。
 
-发布只需要 `index.html` 和完整的 `assets/` 目录，保持相对位置。资源使用相对路径，导航使用 hash，可放在站点根目录或子目录。通过 HTTP(S) 访问；ES modules 不适合直接双击 `file://` 预览。
+页面和 API 必须由同一个 Node 服务提供。对外发布时请在 HTTPS 反向代理后运行；本地 HTTP 只适合本机开发。
 
 ## 用 Nginx 发布
 
-把 `index.html` 和 `assets/` 上传到服务器，例如 `/var/www/our-home/`：
+把整个项目目录（包含 `server.mjs`、`assets/` 和 `data/`）部署到服务器，例如 `/var/www/our-home/`，再用 `npm start` 启动 Node 服务。
 
 ```sh
-scp index.html user@server:/var/www/our-home/
-scp -r assets user@server:/var/www/our-home/
+scp -r . user@server:/var/www/our-home/
 ```
 
 Nginx 配置示例：
@@ -52,15 +53,11 @@ server {
     listen 80;
     server_name your-domain.com;
 
-    root /var/www/our-home;
-    index index.html;
-
     location / {
-        try_files $uri $uri/ /index.html;
-    }
-
-    location ~* \.(html|css|js|svg)$ {
-        add_header Cache-Control "no-cache";
+        proxy_pass http://127.0.0.1:8788;
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
     }
 }
 ```
@@ -72,7 +69,7 @@ sudo nginx -t
 sudo systemctl reload nginx
 ```
 
-如果服务器使用 macOS 或其他进程管理方式，只需要把最后一条替换成对应的 Nginx reload 命令。这个项目没有需要反向代理的 API，也不需要启动 Go 服务。
+如果服务器使用 Nginx，需要把 `/api/` 反向代理到 Node 服务，并把其他请求代理到同一服务；不能只上传静态文件目录。生产环境还应使用 HTTPS、限制数据目录权限，并配置进程守护。
 
 ## 页面内容
 
@@ -86,9 +83,9 @@ sudo systemctl reload nginx
 
 ## 数据
 
-预算自动保存在当前浏览器的 `localStorage`，键为 `our-home.plan.v2`。读取 v1 存档时会保留预算，但旧版“到手收入”不会当作税前工资，需要重新填写。不会上传，也不会在不同浏览器、域名、设备间自动同步。使用「导出计划 / 导入」迁移 JSON；打印按钮输出完整计划。浏览器不允许本地存储时页面仍能计算，并提示导出备份。
+登录后可以新建或选择多份配置。预算通过同源 API 保存到服务端；计划内容使用登录密码派生的 AES-256-GCM 密钥加密后写入 `data/store.json`，服务端不保存明文密码。会话保存在服务端内存，重启服务后需要重新登录。忘记密码无法解密旧计划，也没有找回入口；请继续使用导出计划保存离线备份。
 
-新设备看到的是示例计划。`reference/`、`docs/`、测试文件无需发布。
+新账号登录后可以新建空白配置，也可以导入旧版本机计划。`reference/`、`docs/`、测试文件无需发布。
 
 ## 计算与验证
 

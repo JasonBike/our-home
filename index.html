@@ -14,6 +14,37 @@
 </head>
 <body>
   <a class="skip-link" href="#main">跳到主要内容</a>
+  <section id="profile-gate" class="profile-gate" aria-labelledby="gate-heading">
+    <div class="gate-art" aria-hidden="true"><img src="./assets/home-generated.png" alt="" width="520" height="330"><span>留一盏灯，等我们回家。</span></div>
+    <div class="gate-panel">
+      <div class="gate-brand"><span class="brand-icon" data-icon="home"></span><div><strong>我们的家</strong><small>OUR LITTLE HOME</small></div></div>
+      <div class="eyebrow">A LITTLE PLAN, A LOVELY LIFE</div>
+      <h1 id="gate-heading">把计划，存成我们自己的家。</h1>
+      <p class="gate-intro">登录后保存预算、贷款和付款安排。数据存放在这个项目的服务端，并经过加密。</p>
+      <div id="auth-message" class="auth-message" role="status" aria-live="polite"></div>
+      <form id="login-form" class="auth-form">
+        <label>账号<input id="login-username" name="username" autocomplete="username" required maxlength="64" placeholder="输入账号名"></label>
+        <label>密码<input id="login-password" name="password" type="password" autocomplete="current-password" required minlength="8" placeholder="至少 8 位"></label>
+        <button class="button primary gate-submit" type="submit">登录并选择计划</button>
+        <button class="text-button" id="show-register" type="button">第一次来？创建账号</button>
+      </form>
+      <form id="register-form" class="auth-form" hidden>
+        <label>账号<input id="register-username" name="username" autocomplete="username" required maxlength="64" placeholder="给自己一个账号名"></label>
+        <label>设置密码<input id="register-password" name="password" type="password" autocomplete="new-password" required minlength="8" placeholder="至少 8 位，忘记后无法找回计划"></label>
+        <label>再输入一次密码<input id="register-password-again" name="passwordAgain" type="password" autocomplete="new-password" required minlength="8" placeholder="确认密码"></label>
+        <button class="button primary gate-submit" type="submit">创建账号</button>
+        <button class="text-button" id="show-login" type="button">已有账号？返回登录</button>
+      </form>
+      <section id="profile-picker" class="profile-picker" hidden aria-labelledby="profile-heading">
+        <div class="profile-picker-heading"><div><div class="eyebrow">WELCOME BACK</div><h2 id="profile-heading">选择一份安家计划</h2></div><button id="logout-button" class="text-button" type="button">退出登录</button></div>
+        <div id="profile-list" class="profile-list"></div>
+        <form id="new-profile-form" class="new-profile-form"><label>新建配置<input id="new-profile-name" maxlength="40" required placeholder="例如：上海买房计划"></label><button class="button outline" type="submit">新建并进入</button></form>
+        <button id="legacy-import-button" class="legacy-import" type="button" hidden>导入这台电脑上的旧计划</button>
+      </section>
+      <p class="privacy-note"><span data-icon="shield"></span>这是密码登录，不是第三方账号。计划内容不会在未登录时加载。</p>
+    </div>
+  </section>
+  <div id="app-shell">
   <aside class="sidebar">
     <a class="brand" href="#overview"><span class="brand-icon" data-icon="home"></span><span>我们的家<small>OUR LITTLE HOME</small></span></a>
     <div class="sidebar-label">两个人的安家计划</div>
@@ -28,13 +59,13 @@
     <div class="local-status"><span></span><small id="save-status">计划保存在本机</small></div>
   </aside>
   <div class="workspace">
-    <header class="topbar"><div class="breadcrumb">我们的家 <span>/</span> <b id="page-name">计划总览</b></div><div class="toolbar"><button class="button subtle" id="import-button"><span data-icon="upload"></span><span>导入</span></button><button class="button subtle" id="export-button"><span data-icon="download"></span><span>导出计划</span></button><button class="icon-button" id="print-button" aria-label="打印完整计划" title="打印完整计划"><span data-icon="print"></span></button></div></header>
+    <header class="topbar"><div class="breadcrumb">我们的家 <span>/</span> <b id="page-name">计划总览</b></div><div class="toolbar"><span id="active-profile"></span><button class="button subtle" id="switch-profile" type="button">切换配置</button><button class="button subtle" id="import-button"><span data-icon="upload"></span><span>导入</span></button><button class="button subtle" id="export-button"><span data-icon="download"></span><span>导出计划</span></button><button class="icon-button" id="print-button" aria-label="打印完整计划" title="打印完整计划"><span data-icon="print"></span></button></div></header>
     <main id="main">
       <section id="overview" class="page" aria-labelledby="overview-heading">
         <div class="page-heading"><div><div class="eyebrow">A LITTLE PLAN, A LOVELY LIFE</div><h1 id="overview-heading">把日子，过成我们的家<span class="heading-spark">✳</span></h1><p>从第一笔预算，到一盏为彼此留的灯。</p></div><span class="location"><span data-icon="pin"></span>上海 · 二手房计划</span></div>
         <div class="hero">
-          <div class="hero-copy"><span class="pill light">我们的安家预算</span><div class="hero-amount"><span data-out="total">250.3</span><small>万元</small></div><p>买房、装修、结婚，还有一份安心的备用金。</p><div class="hero-tags"><span>房价 <b data-out="price">400</b> 万</span><span data-out="modeLabel">纯公积金贷款</span><span>结婚不办婚礼</span></div><a class="button cream" href="#budget">一起调整预算 <span>↗</span></a></div>
-          <div class="hero-art"><img src="./assets/home.svg" alt="午后的小家：绿色沙发、阳光、植物，还有一只熟睡的小猫" width="520" height="330"><span class="art-caption">A place to call ours.</span></div>
+          <div class="hero-copy"><span class="pill light">示例计划 · 可调整</span><div class="hero-amount"><span data-out="total">250.3</span><small>万元</small></div><p>买房、装修、结婚，还有一份安心的备用金。</p><div class="hero-tags"><span>房价 <b data-out="price">400</b> 万</span><span data-out="modeLabel">纯公积金贷款</span><span>结婚不办婚礼</span></div><a class="button cream" href="#budget">一起调整预算 <span>↗</span></a></div>
+          <div class="hero-art"><img src="./assets/home-generated.png" alt="午后的小家：绿色沙发、阳光、植物，还有一只醒目的橘猫" width="520" height="330"><span class="art-caption">留一盏灯，等我们回家。</span></div>
         </div>
         <div class="stats">
           <article class="stat"><div class="stat-top"><span>拿钥匙前准备</span><span class="stat-icon peach" data-icon="key"></span></div><div class="stat-value"><span data-out="ready">172.3</span><small>万</small></div><p>首付 + 税费，不含备用金</p></article>
@@ -50,13 +81,13 @@
 
       <section id="budget" class="page" aria-labelledby="budget-heading" hidden>
         <div class="page-heading"><div><div class="eyebrow">MAKE ROOM FOR WHAT MATTERS</div><h1 id="budget-heading">每一笔，都一起商量</h1><p>改动会同步到总预算与双方分摊。所有金额单位为万元。</p></div><button class="button outline" id="simple-button">试试轻装修方案 ↗</button></div>
-        <div class="budget-summary"><span>当前现金总预算 <strong><span data-out="total"></span><small> 万</small></strong></span><span>买房 <b data-out="home"></b> + 装修 <b data-out="renovation"></b> + 结婚 <b data-out="wedding"></b></span></div>
+        <div class="budget-summary"><span>当前现金总预算 <strong><span data-out="total"></span><small> 万</small></strong></span><span class="budget-formula">买房与备用 <b data-out="home"></b> 万 + 装修与生活 <b data-out="renovation"></b> 万 + 结婚与纪念 <b data-out="wedding"></b> 万 = <b data-out="total"></b> 万<small>备用金已包含在买房与备用中，不含未来房贷本息</small></span></div>
         <div class="budget-grid">
           <article class="card"><div class="card-heading"><h2><span class="section-number">01</span>买房与备用</h2><span class="tag">上海 · 二手房</span></div><div id="house-fields"></div><div class="derived-row"><span>首付款<small>房价 − 实际贷款本金</small></span><strong><span data-out="down"></span> 万</strong></div><p class="field-note">贷款参数在「房贷小算盘」调整。税费默认保留原稿 12.3 万未拆分估算；可在下方核实条件后应用税费试算。</p><div class="subtotal"><span>购房现金小计</span><strong><span data-out="home"></span> 万</strong></div></article>
           <article class="card"><div class="card-heading"><h2><span class="section-number">02</span>装修与生活</h2><span class="tag">一点点添置</span></div><div id="renovation-fields"></div><p class="field-note">原稿按全屋翻新估算。轻装修方案将硬装调为 15 万、家具家电合计调为 7 万。</p><div class="subtotal"><span>装修搬家小计</span><strong><span data-out="renovation"></span> 万</strong></div></article>
           <article class="card wedding-card"><div class="card-heading"><h2><span class="section-number">03</span>简单，也很郑重</h2><span class="tag">结婚 · 不办婚礼</span></div><div id="wedding-fields" class="wedding-fields"></div><div class="field-note">原稿逐项范围合计 16.8～35 万；当前以右侧可调整金额为准。彩礼、三金与婚戒的分摊沿用原稿约定。</div><div class="subtotal"><span>结婚预算小计</span><strong><span data-out="wedding"></span> 万</strong></div></article>
         </div>
-        <article class="card tax-card" style="margin-top:23px"><div class="card-heading"><div><h2><span data-out="price">400</span> 万是房价，交易还要准备多少？</h2><p>已按首套、税务认定的家庭唯一住房设置。面积和房源条件未知，先选情景，不替你猜。</p></div><span class="tag">上海 · 2026 政策</span></div>
+        <article class="card tax-card" style="margin-top:23px"><div class="card-heading"><div><h2><span data-out="price">400</span> 万是房价，交易还要准备多少？</h2><p>按首套示例展示；面积、卖方持有条件和税费承担方式确认后再应用。</p></div><span class="tag">上海 · 2026 政策</span></div>
           <div class="tax-options">
             <label>建筑面积<select id="select-areaBand" data-choice="areaBand"><option value="unknown">还没确定</option><option value="small">不超过 140㎡</option><option value="large">超过 140㎡</option></select></label>
             <label>卖方住房条件<select id="select-sellerStatus" data-choice="sellerStatus"><option value="unknown">还没确定</option><option value="unique">满五且家庭唯一</option><option value="over2">满二，非满五唯一</option><option value="under2">持有不足两年</option></select></label>
@@ -70,7 +101,7 @@
 
       <section id="loans" class="page" aria-labelledby="loans-heading" hidden>
         <div class="page-heading"><div><div class="eyebrow">LESS GUESSING, MORE CLARITY</div><h1 id="loans-heading">让每个月，都心里有数</h1><p>少一点首付，还是少一点月供？把两种生活节奏放在一起看。</p></div><span class="location">等额本息测算</span></div>
-        <div class="loan-layout"><article class="card loan-settings"><div class="card-heading"><h2>我们的贷款参数</h2></div><div id="loan-fields"></div><p class="field-note">公积金额度沿用原稿 240 万假设；实际额度取决于家庭、补充公积金及审核。税前月薪会估算社保、个人公积金、全年平均个税与税后到手；公积金基数留空时按上海 2026 年度普通单位规则（2740～37731 元、个人和单位默认各 7%）估算，工资单不同再改。商贷利率为可调试算值。</p></article><div><div class="loan-options" id="loan-options"></div><p class="field-note">选择方案后，首付、预算总额和分摊自动联动。两种方案均保留同一笔装修、结婚及备用预算。</p><div class="card offset-card"><div><span class="eyebrow">每月现金安排</span><h2>公积金冲还贷后的现金月供</h2><p>月供 <span data-out="payment"></span> 元 − 实际抵扣 <span data-out="offset"></span> 元</p><p>预计账户月入账：<span data-out="fundDeposit"></span> 元 · 税后到手合计：<span data-out="incomeTotal"></span> 元</p></div><div><strong data-out="outOfPocket"></strong><span>元 / 月，需另备现金</span></div></div><p class="field-note">双方都填税前月薪后，公积金月入账按“个人比例 + 单位比例”估算，实际抵扣不超过当月月供；工资单上的缴存基数和比例优先。未填工资时，暂用手动抵扣兜底值。冲还贷按抵扣月供模拟，不另外减少本金。</p></div></div>
+        <div class="loan-layout"><article class="card loan-settings"><div class="card-heading"><h2>我们的贷款参数</h2></div><div id="loan-fields"></div><p class="field-note">公积金额度沿用原稿 240 万假设；实际额度取决于家庭、补充公积金及审核。税前月薪会估算社保、个人公积金、全年平均个税与税后到手；公积金基数留空时按上海 2026 年度普通单位规则（2740～37731 元、个人和单位默认各 7%）估算，工资单不同再改。商贷利率为可调试算值。</p></article><div><div class="loan-options" id="loan-options"></div><p class="field-note">选择方案后，首付、预算总额和分摊自动联动。两种方案均保留同一笔装修、结婚及备用预算。</p><div class="card offset-card"><div><span class="eyebrow">每月现金安排</span><h2>公积金冲还贷后的现金月供</h2><p>月供 <span data-out="payment"></span> 元 − 实际抵扣 <span data-out="offset"></span> 元</p><p>用于抵扣的公积金金额：<span data-out="fundDeposit"></span> 元 · 税后到手合计：<span data-out="incomeTotal"></span> 元</p></div><div><strong data-out="outOfPocket"></strong><span>元 / 月，需另备现金</span></div></div><p class="field-note">双方都填税前月薪后，公积金月入账按“个人比例 + 单位比例”估算，实际抵扣不超过当月月供；工资单上的缴存基数和比例优先。只填一方或未填工资时，这里继续使用手动抵扣值。冲还贷按抵扣月供模拟，不另外减少本金。</p></div></div>
         <article class="card income-card"><div class="card-heading"><h2>月供在我们的收入里，占多少</h2><span class="tag">生活费暂未扣除</span></div><div id="income-results"></div></article>
         <article class="card prepay-card"><div class="card-heading"><div><h2>提前还一点，未来轻松一点</h2><p>这里只测算公积金部分；组合贷中的商业贷款保持原计划。</p></div><span class="tag">逐月计算利息</span></div><div class="prepay-layout"><div><div id="prepay-fields"></div><div class="segmented" role="group" aria-label="提前还款方式"><button data-prepay="term">月供不变 · 缩短年限</button><button data-prepay="payment">年限不变 · 降低月供</button></div><p class="field-note">在所选年份末正常还款后，提前偿还一笔。不含可能的手续费；提前还款金额最多取剩余本金。</p></div><div class="prepay-results"><span>预计少付利息</span><strong><span data-out="saved"></span><small> 万元</small></strong><div class="mini-results"><div><span>之后公积金月供</span><b><span data-out="newPayment"></span> 元</b></div><div><span>还需偿还</span><b data-out="remaining"></b></div></div><p id="prepay-note"></p></div></div><details><summary>同样一笔钱，早还和晚还差多少？</summary><div class="table-scroll"><table><thead><tr><th>提前还款时间</th><th>缩年限 · 省息</th><th>减月供 · 省息</th></tr></thead><tbody id="prepay-table"></tbody></table></div></details></article>
       </section>
@@ -90,6 +121,7 @@
       </section>
       <footer><span>OUR LITTLE HOME <i>·</i> 慢慢来，会有我们自己的家。</span><button id="reset-button">恢复示例计划</button></footer>
     </main>
+  </div>
   </div>
   <input type="file" id="import-file" accept=".json,application/json" hidden>
   <div id="toast" role="status" aria-live="polite"></div>

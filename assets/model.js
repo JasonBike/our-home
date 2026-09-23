@@ -87,8 +87,9 @@ export function payroll(gross, fundBase, special, fundRate, employerFundRate) {
 export function payrollSummary(s) {
   const a = payroll(s.grossA, s.fundBaseA, s.specialA, s.fundRate, s.employerFundRate);
   const b = payroll(s.grossB, s.fundBaseB, s.specialB, s.fundRate, s.employerFundRate);
-  if (!a || !b) return null;
-  return { a, b, grossTotal: a.gross + b.gross, netTotal: a.net + b.net, fundDeposit: a.fundDeposit + b.fundDeposit };
+  const people = [a, b].filter(Boolean);
+  if (!people.length) return null;
+  return { a, b, complete: Boolean(a && b), knownCount: people.length, grossTotal: people.reduce((sum, item) => sum + item.gross, 0), netTotal: people.reduce((sum, item) => sum + item.net, 0), fundDeposit: people.reduce((sum, item) => sum + item.fundDeposit, 0) };
 }
 
 export function budget(s, mode = s.mode) {
@@ -107,7 +108,7 @@ export function budget(s, mode = s.mode) {
   const loans = [loan(fund * 10000, s.rate, s.years), loan(commercial * 10000, s.commercialRate, s.years)];
   const payment = loans.reduce((a, x) => a + x.payment, 0);
   const payrollResult = payrollSummary(s);
-  const fundDeposit = payrollResult?.fundDeposit ?? s.offset;
+  const fundDeposit = payrollResult?.complete ? payrollResult.fundDeposit : s.offset;
   const offset = Math.min(payment, fundDeposit);
   return { down, fund, commercial, home, renovation, wedding, weddingFixed, weddingOther, total, male, female: total - male, tax, ready: down + tax + s.extraHome, payment, interest: loans.reduce((a, x) => a + x.interest, 0), offset, fundDeposit, outOfPocket: Math.max(0, payment - offset), payroll: payrollResult };
 }
