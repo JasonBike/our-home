@@ -72,6 +72,8 @@ test('税前收入估算税后到手与公积金账户入账', () => {
   const one = payroll(20000, null, 0, 7, 7);
   close(one.social, 2100); close(one.employeeFund, 1400); close(one.employerFund, 1400);
   close(one.tax, 940); close(one.net, 15560); close(one.fundDeposit, 2800);
+  assert.equal(payroll(2000, null, 0, 7, 7).fundBase, 2740);
+  assert.equal(payroll(50000, null, 0, 7, 7).fundBase, 37731);
   const summary = payrollSummary({ ...defaults, grossA: 20000, grossB: 10000 });
   assert.equal(summary.grossTotal, 30000);
   assert.equal(summary.fundDeposit, 4200);

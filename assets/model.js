@@ -19,7 +19,7 @@ export const limits = {
   houseShare: [0, 100], renovationShare: [0, 100], weddingShare: [0, 100],
   years: [1, 30], rate: [0, 20], commercialRate: [0, 20], offset: [0, 100000], prepay: [0, 10000], prepayYear: [1, 30],
   extraHome: [0, 1000], extraReno: [0, 1000], extraWedding: [0, 1000],
-  cashNow: [0, 10000], support: [0, 10000], grossA: [0, 1000000], grossB: [0, 1000000], fundBaseA: [0, 1000000], fundBaseB: [0, 1000000], specialA: [0, 100000], specialB: [0, 100000], fundRate: [0, 24], employerFundRate: [0, 24],
+  cashNow: [0, 10000], support: [0, 10000], grossA: [0, 1000000], grossB: [0, 1000000], fundBaseA: [2740, 37731], fundBaseB: [2740, 37731], specialA: [0, 100000], specialB: [0, 100000], fundRate: [0, 24], employerFundRate: [0, 24],
   closingMonth: [1, 12], moveMonth: [1, 12], weddingMonth: [1, 12], supportMonth: [1, 12], brideReturn: [0, 1000], returnMonth: [1, 12],
   brokerRate: [0, 10], registration: [0, 10000], taxExtra: [0, 1000], surchargeRate: [0, 12], pitAmount: [0, 1000]
 };
@@ -53,10 +53,13 @@ export function loan(principal, rate, years) {
 
 // Shanghai employee social-insurance contribution limits for 2026-07 to 2027-06.
 // Housing-fund rates and bases remain editable because the actual wage base follows
-// the employee's previous-year average wage and the annual local notice.
+// the employee's previous-year average wage. The fallback range uses Shanghai's
+// 2026-07 to 2027-06 limits for an ordinary employed worker.
 const SOCIAL_RATE = 0.105;
 const SOCIAL_BASE_MIN = 7546;
 const SOCIAL_BASE_MAX = 37731;
+const FUND_BASE_MIN = 2740;
+const FUND_BASE_MAX = 37731;
 const TAX_BRACKETS = [[36000, .03, 0], [144000, .1, 2520], [300000, .2, 16920], [420000, .25, 31920], [660000, .3, 52920], [960000, .35, 85920], [Infinity, .45, 181920]];
 
 export function annualIncomeTax(taxable) {
@@ -68,7 +71,7 @@ export function annualIncomeTax(taxable) {
 export function payroll(gross, fundBase, special, fundRate, employerFundRate) {
   if (gross === null || !Number.isFinite(gross)) return null;
   const socialBase = Math.min(SOCIAL_BASE_MAX, Math.max(SOCIAL_BASE_MIN, gross));
-  const base = fundBase === null || !Number.isFinite(fundBase) ? gross : fundBase;
+  const base = Math.min(FUND_BASE_MAX, Math.max(FUND_BASE_MIN, fundBase === null || !Number.isFinite(fundBase) ? gross : fundBase));
   const employeeFund = base * fundRate / 100;
   const employerFund = base * employerFundRate / 100;
   const social = socialBase * SOCIAL_RATE;

@@ -42,12 +42,12 @@ fields['cash-fields'] = [['cashNow', '现有可动用现金', '两人合计，�
 fields['loan-fields'].push(
   ['grossA', '一方税前月薪', '工资单税前固定收入，不含年终奖；未知可留空', '元'],
   ['grossB', '另一方税前月薪', '工资单税前固定收入，不含年终奖；未知可留空', '元'],
-  ['fundBaseA', '一方公积金缴存基数', '默认按税前月薪；若工资单基数不同再改', '元'],
-  ['fundBaseB', '另一方公积金缴存基数', '默认按税前月薪；若工资单基数不同再改', '元'],
+  ['fundBaseA', '一方公积金缴存基数（可改）', '留空按上海 2026 年度规则自动估算：2740～37731 元', '元'],
+  ['fundBaseB', '另一方公积金缴存基数（可改）', '留空按上海 2026 年度规则自动估算：2740～37731 元', '元'],
   ['specialA', '一方专项附加扣除', '房贷利息等月均金额，没有就填 0', '元'],
   ['specialB', '另一方专项附加扣除', '房贷利息等月均金额，没有就填 0', '元'],
-  ['fundRate', '个人公积金缴存比例', '默认 7%，按工资单实际比例调整', '%'],
-  ['employerFundRate', '单位公积金缴存比例', '默认 7%，用于估算账户月入账', '%']
+  ['fundRate', '个人公积金缴存比例', '上海普通单位默认 7%，按工资单实际比例调整', '%'],
+  ['employerFundRate', '单位公积金缴存比例', '上海普通单位默认 7%，用于估算账户月入账', '%']
 );
 fields['tax-fields'] = [['brokerRate', '买方中介费占成交价', '1%仅为试算示例，实际双方协商', '%'], ['registration', '转移登记费用', '住宅登记 80 元/件，按实际办理调整', '元'], ['surchargeRate', '附加占增值税比例', '6%为市区税率与减半优惠组合假设', '%'], ['pitAmount', '实际核定卖方个税', '仅在选择手填税额时使用', '万'], ['taxExtra', '其他交易费用', '评估等按实报价，未发生则为 0', '万']];
 fields['schedule-fields'] = [['closingMonth', '第几月过户', '按计划支付首付尾款与税费', '月'], ['moveMonth', '第几月入住', '不能早于过户月', '月'], ['weddingMonth', '第几月安排结婚费用', '按付款较集中的月份模拟', '月'], ['supportMonth', '家庭支持第几月到账', '未到账前不能用来支付', '月'], ['brideReturn', '确定转回小家的彩礼', '默认 0；不能超过彩礼支付额', '万'], ['returnMonth', '彩礼转回的月份', '若实际包含在现有现金中，此处填 0', '月']];
@@ -126,7 +126,7 @@ function renderCashflow(b) {
   $('overview-readiness').textContent = c.missing.length ? '可用现金仍在商量，可以先看预算与分摊。工资和月供单独算，生活支出这轮暂未纳入。' : `当前一次性计划资金缺口 ${money(c.gap, 2)} 万；月供与生活支出另行安排，不用未来工资填平这里的缺口。`;
   const payroll = payrollSummary(state);
   const totalIncome = payroll?.netTotal ?? null;
-  const payrollDetails = payroll ? [payroll.a, payroll.b].map((item, i) => `<div class="analysis-item"><h3>${i === 0 ? '一方' : '另一方'} · 税前 ${yuan(item.gross)} 元</h3><p>社保 ${yuan(item.social)} 元 · 个人公积金 ${yuan(item.employeeFund)} 元 · 预估个税 ${yuan(item.tax)} 元 · 税后到手 ${yuan(item.net)} 元 · 单位与个人公积金预计入账 ${yuan(item.employeeFund + item.employerFund)} 元</p></div>`).join('') : '';
+  const payrollDetails = payroll ? [payroll.a, payroll.b].map((item, i) => `<div class="analysis-item"><h3>${i === 0 ? '一方' : '另一方'} · 税前 ${yuan(item.gross)} 元</h3><p>社保 ${yuan(item.social)} 元 · 公积金基数 ${yuan(item.fundBase)} 元 · 个人公积金 ${yuan(item.employeeFund)} 元 · 预估个税 ${yuan(item.tax)} 元 · 税后到手 ${yuan(item.net)} 元 · 单位与个人公积金预计入账 ${yuan(item.employeeFund + item.employerFund)} 元</p></div>`).join('') : '';
   $('income-results').innerHTML = totalIncome === null ? '<p class="field-note">填入双方税前月薪后，这里会按社保、公积金和全年平均个税估算税后到手。未知可留空，不采用虚构收入。</p>' : `<div class="income-metrics"><div><span>合同月供 / 税后到手</span><strong>${totalIncome > 0 ? money(b.payment / totalIncome * 100) + '%' : '无收入'}</strong></div><div><span>现金月供 / 税后到手</span><strong>${totalIncome > 0 ? money(b.outOfPocket / totalIncome * 100) + '%' : '无收入'}</strong></div><div><span>还贷后收入余量</span><strong>${yuan(totalIncome - b.outOfPocket)}<small> 元</small></strong></div></div>${payrollDetails}<p class="field-note">税后收入是全年平均估算，实际工资单按累计预扣，专项附加扣除和年终奖会让月度数字变化。未扣生活费、其他负债及年度支出，不等于每月可储蓄金额。若公积金暂停抵扣，需多留 ${yuan(b.offset)} 元 / 月。</p>`;
   const extraCash = Math.max(0, b.fund - 200);
   const reduced = budget({ ...state, fund: Math.min(state.fund, 200) });
