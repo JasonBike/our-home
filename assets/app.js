@@ -29,7 +29,7 @@ const fields = {
   'house-fields': [['price', '心仪房子的总价', '成交价，可先放一个目标', '万'], ['tax', '税费与交易费用', '契税、个税、中介等综合预估', '万'], ['reserve', '购房备用金', '给评估差额、临时费用留余地', '万']],
   'renovation-fields': [['renovation', '硬装', '拆旧、水电、防水、门窗等', '万'], ['furniture', '家具', '沙发、床、餐桌与柜子', '万'], ['appliances', '家电', '冰箱、空调、洗衣机与厨电', '万'], ['moving', '租房与搬家', '过渡期间的生活安排', '万']],
   'wedding-fields': [['bride', '彩礼', '原稿 10～18 万 · 两家商量', '万'], ['gold', '三金', '原稿 3～5 万 · 项链、戒指、手镯', '万'], ['ring', '婚戒', '原稿 1～2.5 万', '万'], ['dinner', '家长见面宴', '原稿 1～2 万 · 两三桌', '万'], ['gifts', '改口费与见面礼', '原稿 0.5～1 万', '万'], ['candy', '喜糖与伴手礼', '原稿 0.5～1 万', '万'], ['photos', '婚纱照', '原稿 0.8～1.5 万 · 可以晚一点', '万'], ['honeymoon', '蜜月旅行', '原稿 0～4 万 · 不着急出发', '万']],
-  'loan-fields': [['fund', '公积金贷款', '实际使用额不超过房价', '万'], ['commercial', '组合贷中的商贷', '不超过房价减去公积金贷款', '万'], ['years', '还款年限', '两种贷款使用相同年限', '年'], ['rate', '公积金年利率', '沿用首套 5 年以上 2.6% 示例', '%'], ['commercialRate', '商业贷款年利率', '3.1% 为测算假设，可调整', '%'], ['offset', '每月公积金抵扣', '两人合计，以实际可抵扣额为准', '元']],
+  'loan-fields': [['fund', '公积金贷款', '实际使用额不超过房价', '万'], ['commercial', '组合贷中的商贷', '不超过房价减去公积金贷款', '万'], ['years', '还款年限', '两种贷款使用相同年限', '年'], ['rate', '公积金年利率', '沿用首套 5 年以上 2.6% 示例', '%'], ['commercialRate', '商业贷款年利率', '3.1% 为测算假设，可调整', '%'], ['offset', '每月公积金可抵扣月供', '两人合计，请按公积金账户实际月入账额填写；不能用税后收入直接反推', '元']],
   'prepay-fields': [['prepay', '提前偿还一笔', '仅用于公积金贷款部分', '万'], ['prepayYear', '第几年末提前还', '超过贷款年限时，不产生额外省息', '年']]
 };
 fields['house-fields'].push(['extraHome', '其他购房支出', '验房等未含在税费里的报价 · 暂按 0', '万']);
@@ -69,7 +69,7 @@ function render() {
   const remaining = pp.remainingMonths ? `${Math.floor(pp.remainingMonths / 12)} 年 ${pp.remainingMonths % 12} 个月` : '已结清';
   const outputs = Object.fromEntries(['price', 'reserve', 'years', 'rate'].map(k => [k, money(state[k])]));
   Object.assign(outputs, Object.fromEntries(['total', 'ready', 'home', 'down', 'renovation', 'wedding'].map(k => [k, money(b[k])])), {
-    male: money(b.male, 2), female: money(b.female, 2), payment: yuan(b.payment), outOfPocket: yuan(b.outOfPocket), offset: yuan(state.offset),
+    male: money(b.male, 2), female: money(b.female, 2), payment: yuan(b.payment), outOfPocket: yuan(b.outOfPocket), offset: yuan(state.offset), incomeTotal: state.incomeA === null || state.incomeB === null ? '待填写' : yuan(state.incomeA + state.incomeB),
     modeLabel: state.mode === 'fund' ? '纯公积金贷款' : '公积金 + 商业组合贷', saved: money(pp.saved / 10000, 2), newPayment: yuan(pp.payment), remaining
   });
   setOutput(outputs);
