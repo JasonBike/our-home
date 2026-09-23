@@ -66,7 +66,7 @@ test('未知现金不当作零；收入不补贴一次性资金缺口', () => {
   assert.equal(cashflow(defaults).gap, null);
   const s = { ...defaults, cashNow: 240, support: 0 };
   close(cashflow(s).gap, 10.3);
-  close(cashflow({ ...s, incomeA: 100000, incomeB: 100000 }).gap, 10.3);
+  close(cashflow({ ...s, grossA: 100000, grossB: 100000 }).gap, 10.3);
 });
 test('税前收入估算税后到手与公积金账户入账', () => {
   const one = payroll(20000, null, 0, 7, 7);
@@ -78,6 +78,11 @@ test('税前收入估算税后到手与公积金账户入账', () => {
   assert.equal(summary.grossTotal, 30000);
   assert.equal(summary.fundDeposit, 4200);
   close(budget({ ...defaults, grossA: 20000, grossB: 10000 }).offset, 4200);
+  const partial = payrollSummary({ ...defaults, grossA: 20000 });
+  assert.equal(partial.complete, false);
+  assert.equal(partial.knownCount, 1);
+  close(partial.netTotal, 15560);
+  close(budget({ ...defaults, grossA: 20000 }).offset, defaults.offset);
 });
 test('付款总额守恒，定金不重复，备用金只扣一次', () => {
   for (const closingMonth of [1, 2, 12]) {
