@@ -6,7 +6,8 @@ export const defaults = Object.freeze({
   years: 30, rate: 2.6, commercialRate: 3.1, offset: 5000,
   prepay: 50, prepayYear: 3, prepayMode: 'term', checks: [],
   extraHome: 0, extraReno: 0, extraWedding: 0,
-  cashNow: null, support: null, incomeA: null, incomeB: null,
+  cashNow: null, support: null, grossA: null, grossB: null, fundBaseA: null, fundBaseB: null, specialA: 0, specialB: 0,
+  fundRate: 7, employerFundRate: 7,
   closingMonth: 2, moveMonth: 6, weddingMonth: 6, supportMonth: 1, brideReturn: 0, returnMonth: 7,
   taxMode: 'manual', areaBand: 'unknown', sellerStatus: 'unknown', sellerBurden: 'unknown', pitMode: 'unknown', pitAmount: null,
   brokerRate: 1, registration: 80, taxExtra: 0, surchargeRate: 6
@@ -18,11 +19,11 @@ export const limits = {
   houseShare: [0, 100], renovationShare: [0, 100], weddingShare: [0, 100],
   years: [1, 30], rate: [0, 20], commercialRate: [0, 20], offset: [0, 100000], prepay: [0, 10000], prepayYear: [1, 30],
   extraHome: [0, 1000], extraReno: [0, 1000], extraWedding: [0, 1000],
-  cashNow: [0, 10000], support: [0, 10000], incomeA: [0, 1000000], incomeB: [0, 1000000],
+  cashNow: [0, 10000], support: [0, 10000], grossA: [0, 1000000], grossB: [0, 1000000], fundBaseA: [0, 1000000], fundBaseB: [0, 1000000], specialA: [0, 100000], specialB: [0, 100000], fundRate: [0, 24], employerFundRate: [0, 24],
   closingMonth: [1, 12], moveMonth: [1, 12], weddingMonth: [1, 12], supportMonth: [1, 12], brideReturn: [0, 1000], returnMonth: [1, 12],
   brokerRate: [0, 10], registration: [0, 10000], taxExtra: [0, 1000], surchargeRate: [0, 12], pitAmount: [0, 1000]
 };
-export const personalKeys = ['cashNow', 'support', 'incomeA', 'incomeB', 'pitAmount'];
+export const personalKeys = ['cashNow', 'support', 'grossA', 'grossB', 'fundBaseA', 'fundBaseB', 'pitAmount'];
 export const choices = { taxMode: ['manual', 'calculated'], areaBand: ['unknown', 'small', 'large'], sellerStatus: ['unknown', 'under2', 'over2', 'unique'], sellerBurden: ['unknown', 'buyer', 'seller'], pitMode: ['unknown', 'assessed', 'manual'] };
 export function sanitize(raw) {
   const s = { ...defaults, checks: [] };
@@ -49,6 +50,44 @@ export function loan(principal, rate, years) {
   const payment = monthly(principal, rate, years * 12);
   return { principal, payment, interest: Math.max(0, payment * years * 12 - principal), total: payment * years * 12 };
 }
+
+// Shanghai employee social-insurance contribution limits for 2026-07 to 2027-06.
+// Housing-fund rates and bases remain editable because the actual wage base follows
+// the employee's previous-year average wage and the annual local notice.
+const SOCIAL_RATE = 0.105;
+const SOCIAL_BASE_MIN = 7546;
+const SOCIAL_BASE_MAX = 37731;
+const TAX_BRACKETS = [[36000, .03, 0], [144000, .1, 2520], [300000, .2, 16920], [420000, .25, 31920], [660000, .3, 52920], [960000, .35, 85920], [Infinity, .45, 181920]];
+
+export function annualIncomeTax(taxable) {
+  const value = Math.max(0, taxable);
+  const [, rate, quick] = TAX_BRACKETS.find(([upper]) => value <= upper);
+  return Math.max(0, value * rate - quick);
+}
+
+export function payroll(gross, fundBase, special, fundRate, employerFundRate) {
+  if (gross === null || !Number.isFinite(gross)) return null;
+  const socialBase = Math.min(SOCIAL_BASE_MAX, Math.max(SOCIAL_BASE_MIN, gross));
+  const base = fundBase === null || !Number.isFinite(fundBase) ? gross : fundBase;
+  const employeeFund = base * fundRate / 100;
+  const employerFund = base * employerFundRate / 100;
+  const social = socialBase * SOCIAL_RATE;
+  const annualTaxable = Math.max(0, (gross - social - employeeFund) * 12 - Math.max(0, special) * 12 - 60000);
+  const tax = annualIncomeTax(annualTaxable) / 12;
+  return {
+    gross, socialBase, social, fundBase: base, employeeFund, employerFund,
+    fundDeposit: employeeFund + employerFund, annualTaxable, tax,
+    net: Math.max(0, gross - social - employeeFund - tax)
+  };
+}
+
+export function payrollSummary(s) {
+  const a = payroll(s.grossA, s.fundBaseA, s.specialA, s.fundRate, s.employerFundRate);
+  const b = payroll(s.grossB, s.fundBaseB, s.specialB, s.fundRate, s.employerFundRate);
+  if (!a || !b) return null;
+  return { a, b, grossTotal: a.gross + b.gross, netTotal: a.net + b.net, fundDeposit: a.fundDeposit + b.fundDeposit };
+}
+
 export function budget(s, mode = s.mode) {
   const estimated = s.taxMode === 'calculated' ? taxEstimate(s) : null;
   const tax = estimated?.complete ? estimated.total : s.tax;
@@ -64,7 +103,10 @@ export function budget(s, mode = s.mode) {
   const male = weddingFixed + home * s.houseShare / 100 + renovation * s.renovationShare / 100 + weddingOther * s.weddingShare / 100;
   const loans = [loan(fund * 10000, s.rate, s.years), loan(commercial * 10000, s.commercialRate, s.years)];
   const payment = loans.reduce((a, x) => a + x.payment, 0);
-  return { down, fund, commercial, home, renovation, wedding, weddingFixed, weddingOther, total, male, female: total - male, tax, ready: down + tax + s.extraHome, payment, interest: loans.reduce((a, x) => a + x.interest, 0), outOfPocket: Math.max(0, payment - s.offset) };
+  const payrollResult = payrollSummary(s);
+  const fundDeposit = payrollResult?.fundDeposit ?? s.offset;
+  const offset = Math.min(payment, fundDeposit);
+  return { down, fund, commercial, home, renovation, wedding, weddingFixed, weddingOther, total, male, female: total - male, tax, ready: down + tax + s.extraHome, payment, interest: loans.reduce((a, x) => a + x.interest, 0), offset, fundDeposit, outOfPocket: Math.max(0, payment - offset), payroll: payrollResult };
 }
 // P is the stated VAT-inclusive transaction value, not the seller's net proceeds.
 // Contractual assumption of seller taxes is a separate cash item, not a gross-up.

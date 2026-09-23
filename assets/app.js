@@ -1,10 +1,13 @@
-import { defaults, limits, personalKeys, choices, sanitize, budget, cashflow, prepayment, taxEstimate } from './model.js';
+import { defaults, limits, personalKeys, choices, sanitize, budget, cashflow, prepayment, taxEstimate, payrollSummary } from './model.js';
 
 const $ = id => document.getElementById(id);
-const storageKey = 'our-home.plan.v1';
+const storageKey = 'our-home.plan.v2';
 let state = sanitize(defaults);
 let storageAvailable = true;
-try { const saved = JSON.parse(localStorage.getItem(storageKey) || 'null'); if (saved?.version === 1) state = sanitize(saved.plan); } catch { storageAvailable = false; }
+try {
+  const saved = JSON.parse(localStorage.getItem(storageKey) || localStorage.getItem('our-home.plan.v1') || 'null');
+  if (saved?.version === 1 || saved?.version === 2) state = sanitize(saved.plan);
+} catch { storageAvailable = false; }
 const money = (n, digits = 1) => n.toLocaleString('zh-CN', { maximumFractionDigits: digits });
 const yuan = n => money(n, 0);
 const icons = {
@@ -29,14 +32,23 @@ const fields = {
   'house-fields': [['price', '心仪房子的总价', '成交价，可先放一个目标', '万'], ['tax', '税费与交易费用', '契税、个税、中介等综合预估', '万'], ['reserve', '购房备用金', '给评估差额、临时费用留余地', '万']],
   'renovation-fields': [['renovation', '硬装', '拆旧、水电、防水、门窗等', '万'], ['furniture', '家具', '沙发、床、餐桌与柜子', '万'], ['appliances', '家电', '冰箱、空调、洗衣机与厨电', '万'], ['moving', '租房与搬家', '过渡期间的生活安排', '万']],
   'wedding-fields': [['bride', '彩礼', '原稿 10～18 万 · 两家商量', '万'], ['gold', '三金', '原稿 3～5 万 · 项链、戒指、手镯', '万'], ['ring', '婚戒', '原稿 1～2.5 万', '万'], ['dinner', '家长见面宴', '原稿 1～2 万 · 两三桌', '万'], ['gifts', '改口费与见面礼', '原稿 0.5～1 万', '万'], ['candy', '喜糖与伴手礼', '原稿 0.5～1 万', '万'], ['photos', '婚纱照', '原稿 0.8～1.5 万 · 可以晚一点', '万'], ['honeymoon', '蜜月旅行', '原稿 0～4 万 · 不着急出发', '万']],
-  'loan-fields': [['fund', '公积金贷款', '实际使用额不超过房价', '万'], ['commercial', '组合贷中的商贷', '不超过房价减去公积金贷款', '万'], ['years', '还款年限', '两种贷款使用相同年限', '年'], ['rate', '公积金年利率', '沿用首套 5 年以上 2.6% 示例', '%'], ['commercialRate', '商业贷款年利率', '3.1% 为测算假设，可调整', '%'], ['offset', '每月公积金可抵扣月供', '两人合计，请按公积金账户实际月入账额填写；不能用税后收入直接反推', '元']],
+  'loan-fields': [['fund', '公积金贷款', '实际使用额不超过房价', '万'], ['commercial', '组合贷中的商贷', '不超过房价减去公积金贷款', '万'], ['years', '还款年限', '两种贷款使用相同年限', '年'], ['rate', '公积金年利率', '沿用首套 5 年以上 2.6% 示例', '%'], ['commercialRate', '商业贷款年利率', '3.1% 为测算假设，可调整', '%'], ['offset', '未填工资时的手动抵扣', '只有双方税前月薪留空时使用；填好工资后会自动计算', '元']],
   'prepay-fields': [['prepay', '提前偿还一笔', '仅用于公积金贷款部分', '万'], ['prepayYear', '第几年末提前还', '超过贷款年限时，不产生额外省息', '年']]
 };
 fields['house-fields'].push(['extraHome', '其他购房支出', '验房等未含在税费里的报价 · 暂按 0', '万']);
 fields['renovation-fields'].push(['extraReno', '装修补充项目', '软装、清运、保洁等未包含项 · 暂按 0', '万']);
 fields['wedding-fields'].push(['extraWedding', '结婚补充项目', '交通住宿、服装等未包含项 · 暂按 0', '万']);
 fields['cash-fields'] = [['cashNow', '现有可动用现金', '两人合计，已经到账的钱', '万'], ['support', '确定会到账的家庭支持', '不含已计入现有现金的部分', '万']];
-fields['loan-fields'].push(['incomeA', '一方每月到手收入', '未知可留空，不含公积金与年终奖', '元'], ['incomeB', '另一方每月到手收入', '未知可留空，不含公积金与年终奖', '元']);
+fields['loan-fields'].push(
+  ['grossA', '一方税前月薪', '工资单税前固定收入，不含年终奖；未知可留空', '元'],
+  ['grossB', '另一方税前月薪', '工资单税前固定收入，不含年终奖；未知可留空', '元'],
+  ['fundBaseA', '一方公积金缴存基数', '默认按税前月薪；若工资单基数不同再改', '元'],
+  ['fundBaseB', '另一方公积金缴存基数', '默认按税前月薪；若工资单基数不同再改', '元'],
+  ['specialA', '一方专项附加扣除', '房贷利息等月均金额，没有就填 0', '元'],
+  ['specialB', '另一方专项附加扣除', '房贷利息等月均金额，没有就填 0', '元'],
+  ['fundRate', '个人公积金缴存比例', '默认 7%，按工资单实际比例调整', '%'],
+  ['employerFundRate', '单位公积金缴存比例', '默认 7%，用于估算账户月入账', '%']
+);
 fields['tax-fields'] = [['brokerRate', '买方中介费占成交价', '1%仅为试算示例，实际双方协商', '%'], ['registration', '转移登记费用', '住宅登记 80 元/件，按实际办理调整', '元'], ['surchargeRate', '附加占增值税比例', '6%为市区税率与减半优惠组合假设', '%'], ['pitAmount', '实际核定卖方个税', '仅在选择手填税额时使用', '万'], ['taxExtra', '其他交易费用', '评估等按实报价，未发生则为 0', '万']];
 fields['schedule-fields'] = [['closingMonth', '第几月过户', '按计划支付首付尾款与税费', '月'], ['moveMonth', '第几月入住', '不能早于过户月', '月'], ['weddingMonth', '第几月安排结婚费用', '按付款较集中的月份模拟', '月'], ['supportMonth', '家庭支持第几月到账', '未到账前不能用来支付', '月'], ['brideReturn', '确定转回小家的彩礼', '默认 0；不能超过彩礼支付额', '万'], ['returnMonth', '彩礼转回的月份', '若实际包含在现有现金中，此处填 0', '月']];
 for (const [container, items] of Object.entries(fields)) {
@@ -65,11 +77,12 @@ function render() {
   if (state.taxMode === 'calculated' && estimate.complete) { state.tax = estimate.total; if (document.activeElement !== $('field-tax')) $('field-tax').value = Number(state.tax.toFixed(5)); }
   document.querySelector('label[for="field-rate"] small').textContent = state.years <= 5 ? '首套 ≤5年政策参考 2.1%，请核实后调整' : '首套 >5年政策参考 2.6%，以实际合同为准';
   const b = budget(state);
+  const payroll = payrollSummary(state);
   const pp = prepayment(b.fund * 10000, state.rate, state.years, state.prepay * 10000, state.prepayYear, state.prepayMode);
   const remaining = pp.remainingMonths ? `${Math.floor(pp.remainingMonths / 12)} 年 ${pp.remainingMonths % 12} 个月` : '已结清';
   const outputs = Object.fromEntries(['price', 'reserve', 'years', 'rate'].map(k => [k, money(state[k])]));
   Object.assign(outputs, Object.fromEntries(['total', 'ready', 'home', 'down', 'renovation', 'wedding'].map(k => [k, money(b[k])])), {
-    male: money(b.male, 2), female: money(b.female, 2), payment: yuan(b.payment), outOfPocket: yuan(b.outOfPocket), offset: yuan(state.offset), incomeTotal: state.incomeA === null || state.incomeB === null ? '待填写' : yuan(state.incomeA + state.incomeB),
+    male: money(b.male, 2), female: money(b.female, 2), payment: yuan(b.payment), outOfPocket: yuan(b.outOfPocket), offset: yuan(b.offset), fundDeposit: yuan(b.fundDeposit), incomeTotal: payroll ? yuan(payroll.netTotal) : '待填写', grossTotal: payroll ? yuan(payroll.grossTotal) : '待填写',
     modeLabel: state.mode === 'fund' ? '纯公积金贷款' : '公积金 + 商业组合贷', saved: money(pp.saved / 10000, 2), newPayment: yuan(pp.payment), remaining
   });
   setOutput(outputs);
@@ -111,12 +124,14 @@ function renderCashflow(b) {
     + resultCard('执行计划前需有现金', c.required === null ? '待填写' : `${money(c.required, 2)} <small>万</small>`, '结合支持与彩礼返还的到账月份，确保各付款节点不动用购房备用。')
     + resultCard('当前一次性资金缺口', c.gap === null ? '待填写' : `${money(c.gap, 2)} <small>万</small>`, '只比较当前现金和本页一次性计划；不等同于整体财务是否安全。');
   $('overview-readiness').textContent = c.missing.length ? '可用现金仍在商量，可以先看预算与分摊。工资和月供单独算，生活支出这轮暂未纳入。' : `当前一次性计划资金缺口 ${money(c.gap, 2)} 万；月供与生活支出另行安排，不用未来工资填平这里的缺口。`;
-  const totalIncome = state.incomeA === null || state.incomeB === null ? null : state.incomeA + state.incomeB;
-  $('income-results').innerHTML = totalIncome === null ? '<p class="field-note">填入双方到手收入后，查看月供占比与还贷后收入余量。未知可留空，不采用虚构收入。</p>' : `<div class="income-metrics"><div><span>合同月供 / 到手收入</span><strong>${totalIncome > 0 ? money(b.payment / totalIncome * 100) + '%' : '无收入'}</strong></div><div><span>公积金抵扣后 / 到手收入</span><strong>${totalIncome > 0 ? money(b.outOfPocket / totalIncome * 100) + '%' : '无收入'}</strong></div><div><span>还贷后收入余量</span><strong>${yuan(totalIncome - b.outOfPocket)}<small> 元</small></strong></div></div><p class="field-note">未扣生活费、其他负债及年度支出，不等于每月可储蓄金额。若公积金抵扣停止，需多留 ${yuan(Math.min(b.payment, state.offset))} 元 / 月。</p>`;
+  const payroll = payrollSummary(state);
+  const totalIncome = payroll?.netTotal ?? null;
+  const payrollDetails = payroll ? [payroll.a, payroll.b].map((item, i) => `<div class="analysis-item"><h3>${i === 0 ? '一方' : '另一方'} · 税前 ${yuan(item.gross)} 元</h3><p>社保 ${yuan(item.social)} 元 · 个人公积金 ${yuan(item.employeeFund)} 元 · 预估个税 ${yuan(item.tax)} 元 · 税后到手 ${yuan(item.net)} 元 · 单位与个人公积金预计入账 ${yuan(item.employeeFund + item.employerFund)} 元</p></div>`).join('') : '';
+  $('income-results').innerHTML = totalIncome === null ? '<p class="field-note">填入双方税前月薪后，这里会按社保、公积金和全年平均个税估算税后到手。未知可留空，不采用虚构收入。</p>' : `<div class="income-metrics"><div><span>合同月供 / 税后到手</span><strong>${totalIncome > 0 ? money(b.payment / totalIncome * 100) + '%' : '无收入'}</strong></div><div><span>现金月供 / 税后到手</span><strong>${totalIncome > 0 ? money(b.outOfPocket / totalIncome * 100) + '%' : '无收入'}</strong></div><div><span>还贷后收入余量</span><strong>${yuan(totalIncome - b.outOfPocket)}<small> 元</small></strong></div></div>${payrollDetails}<p class="field-note">税后收入是全年平均估算，实际工资单按累计预扣，专项附加扣除和年终奖会让月度数字变化。未扣生活费、其他负债及年度支出，不等于每月可储蓄金额。若公积金暂停抵扣，需多留 ${yuan(b.offset)} 元 / 月。</p>`;
   const extraCash = Math.max(0, b.fund - 200);
   const reduced = budget({ ...state, fund: Math.min(state.fund, 200) });
   const overrun = state.renovation * .1;
-  $('stress-cases').innerHTML = `<div class="analysis-item"><span class="tag">额度变少</span><h3>公积金只能贷到 200 万</h3><p>按当前房价与商贷设置，需多准备 ${money(reduced.down - b.down)} 万首付，月供变为 ${yuan(reduced.payment)} 元。${extraCash > 0 ? '如果增加商贷补缺口，要同时重算月供。' : '当前公积金使用额不高于 200 万，此情景不增加首付。'}200 万仍只是情景，实际可贷额也可能更低。</p></div><div class="analysis-item"><span class="tag">装修超支</span><h3>硬装比报价多 10%</h3><p>追加 ${money(overrun)} 万；若由购房备用金覆盖，会剩 ${money(Math.max(0, state.reserve - overrun))} 万备用${overrun > state.reserve ? `，还缺 ${money(overrun - state.reserve)} 万` : ''}。这是压力测试，不再把同一笔费用叠加到已含备用的预算里。</p></div><div class="analysis-item"><span class="tag">收入中断</span><h3>公积金暂时不能抵扣月供</h3><p>届时每月需用现金支付完整月供 ${yuan(b.payment)} 元，比当前抵扣假设多 ${yuan(Math.min(b.payment, state.offset))} 元。账户余额不足或入账中断时，要有另一笔钱接住。</p></div>`;
+  $('stress-cases').innerHTML = `<div class="analysis-item"><span class="tag">额度变少</span><h3>公积金只能贷到 200 万</h3><p>按当前房价与商贷设置，需多准备 ${money(reduced.down - b.down)} 万首付，月供变为 ${yuan(reduced.payment)} 元。${extraCash > 0 ? '如果增加商贷补缺口，要同时重算月供。' : '当前公积金使用额不高于 200 万，此情景不增加首付。'}200 万仍只是情景，实际可贷额也可能更低。</p></div><div class="analysis-item"><span class="tag">装修超支</span><h3>硬装比报价多 10%</h3><p>追加 ${money(overrun)} 万；若由购房备用金覆盖，会剩 ${money(Math.max(0, state.reserve - overrun))} 万备用${overrun > state.reserve ? `，还缺 ${money(overrun - state.reserve)} 万` : ''}。这是压力测试，不再把同一笔费用叠加到已含备用的预算里。</p></div><div class="analysis-item"><span class="tag">收入中断</span><h3>公积金暂时不能抵扣月供</h3><p>届时每月需用现金支付完整月供 ${yuan(b.payment)} 元，比当前抵扣假设多 ${yuan(b.offset)} 元。账户余额不足或入账中断时，要有另一笔钱接住。</p></div>`;
   if (c.missing.length) {
     $('cash-chart').innerHTML = `<div class="empty-state"><span data-empty-icon>↗</span><h3>现金还在商量，也可以先看预算</h3><p>待填写：${missingLabels.join('、')}。</p><small>没有的项目请填 0；留空表示尚不清楚。</small></div>`;
     $('cash-table').innerHTML = '<tr><td colspan="5">填入可用现金和确定的家庭支持后显示；没有支持请填 0。</td></tr>';
@@ -132,7 +147,7 @@ function syncInputs() {
   document.querySelectorAll('[data-choice]').forEach(input => { input.value = state[input.dataset.choice]; });
 }
 function save() {
-  try { localStorage.setItem(storageKey, JSON.stringify({ version: 1, plan: state })); storageAvailable = true; }
+  try { localStorage.setItem(storageKey, JSON.stringify({ version: 2, plan: state })); storageAvailable = true; }
   catch { storageAvailable = false; }
   $('save-status').textContent = storageAvailable ? '已保存到本机浏览器' : '未能本地保存，请导出备份';
 }
@@ -159,7 +174,7 @@ $('simple-button').addEventListener('click', () => { state.renovation = 15; stat
 $('reset-button').addEventListener('click', () => $('reset-dialog').showModal());
 $('reset-dialog').addEventListener('close', () => { if ($('reset-dialog').returnValue !== 'reset') return; state = sanitize(defaults); syncInputs(); render(); save(); toast('已恢复示例计划'); });
 $('export-button').addEventListener('click', () => {
-  const payload = { app: 'our-home', version: 1, exportedAt: new Date().toISOString(), plan: state };
+  const payload = { app: 'our-home', version: 2, exportedAt: new Date().toISOString(), plan: state };
   const url = URL.createObjectURL(new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' }));
   const anchor = document.createElement('a'); anchor.href = url; anchor.download = `我们的家-${new Date().toISOString().slice(0, 10)}.json`; anchor.click(); setTimeout(() => URL.revokeObjectURL(url), 1000); toast('已导出计划，可以带去另一台设备');
 });
@@ -169,13 +184,14 @@ $('import-file').addEventListener('change', async event => {
   try {
     if (file.size > 100000) throw new Error('文件过大');
     const data = JSON.parse(await file.text());
-    if (data.app !== 'our-home' || data.version !== 1 || !data.plan || typeof data.plan !== 'object' || Array.isArray(data.plan)) throw new Error('格式不匹配');
+    if (data.app !== 'our-home' || ![1, 2].includes(data.version) || !data.plan || typeof data.plan !== 'object' || Array.isArray(data.plan)) throw new Error('格式不匹配');
     for (const [key, [min, max]] of Object.entries(limits)) {
+      if (!Object.hasOwn(data.plan, key)) continue;
       if (personalKeys.includes(key) && data.plan[key] === null) continue;
       if (typeof data.plan[key] !== 'number' || !Number.isFinite(data.plan[key]) || data.plan[key] < min || data.plan[key] > max) throw new Error('预算字段不完整或超出范围');
     }
     if (!['fund', 'combo'].includes(data.plan.mode) || !['term', 'payment'].includes(data.plan.prepayMode) || !Array.isArray(data.plan.checks)) throw new Error('计划格式不完整');
-    for (const [key, options] of Object.entries(choices)) if (!options.includes(data.plan[key])) throw new Error('情景字段不完整');
+    for (const [key, options] of Object.entries(choices)) if (Object.hasOwn(data.plan, key) && !options.includes(data.plan[key])) throw new Error('情景字段不完整');
     state = sanitize(data.plan); syncInputs(); render(); save(); toast('计划已导入，预算和待办已恢复');
   } catch { toast('导入失败，请选择由本站导出的有效 JSON 计划文件'); }
   event.target.value = '';

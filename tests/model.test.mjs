@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { defaults, sanitize, monthly, budget, cashflow, prepayment, taxEstimate } from '../assets/model.js';
+import { defaults, sanitize, monthly, budget, cashflow, prepayment, taxEstimate, payroll, payrollSummary } from '../assets/model.js';
 const close = (a, b, epsilon = 1e-6) => assert.ok(Math.abs(a - b) < epsilon, `${a} ≠ ${b}`);
 
 test('原稿预算按项目求和，分摊守恒', () => {
@@ -67,6 +67,15 @@ test('未知现金不当作零；收入不补贴一次性资金缺口', () => {
   const s = { ...defaults, cashNow: 240, support: 0 };
   close(cashflow(s).gap, 10.3);
   close(cashflow({ ...s, incomeA: 100000, incomeB: 100000 }).gap, 10.3);
+});
+test('税前收入估算税后到手与公积金账户入账', () => {
+  const one = payroll(20000, null, 0, 7, 7);
+  close(one.social, 2100); close(one.employeeFund, 1400); close(one.employerFund, 1400);
+  close(one.tax, 940); close(one.net, 15560); close(one.fundDeposit, 2800);
+  const summary = payrollSummary({ ...defaults, grossA: 20000, grossB: 10000 });
+  assert.equal(summary.grossTotal, 30000);
+  assert.equal(summary.fundDeposit, 4200);
+  close(budget({ ...defaults, grossA: 20000, grossB: 10000 }).offset, 4200);
 });
 test('付款总额守恒，定金不重复，备用金只扣一次', () => {
   for (const closingMonth of [1, 2, 12]) {
